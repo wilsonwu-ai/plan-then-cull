@@ -1,0 +1,18 @@
+name = "plan-then-cull"
+main = "src/worker.js"
+compatibility_date = "2026-08-29"
+
+# The round-ingest store. Populated by the local runner during the hack;
+# the page polls /api/round every 3s and renders whatever is here.
+[[kv_namespaces]]
+binding = "ROUNDS"
+id = "dcef48ccf9d048ec9b9304e8e6713ae9"
+
+# INGEST_TOKEN is deliberately NOT declared here.
+#
+# It must be a wrangler SECRET:
+#     npx wrangler secret put INGEST_TOKEN
+#
+# Declaring a plaintext [vars] entry of the same name collides with the secret
+# binding and the deploy fails with Cloudflare error 10053. This comment is the
+# whole reason the mistake is not repeated.

@@ -4,6 +4,8 @@
 
 Built for [Sundai Hack 138 — *Beyond Scale: Small Models, Big Applications*](https://www.sundai.club/) (MIT, 30 Aug 2026). The organizers set one challenge: **make a small model smarter, not bigger.** This is a plan and a set of measurements for doing that honestly.
 
+**Live:** https://plan-then-cull.wilson-af8.workers.dev
+
 MIT licensed. Everything here runs on one laptop with no API key.
 
 ---
