@@ -1,12 +1,65 @@
 # plan-then-cull
 
-**A big model writes the test. A tiny model takes it, sixty times. A Python interpreter grades it.**
+**A big model writes the test once. A tiny model tries many answers. Python culls the failures.**
 
-Built for [Sundai Hack 138 — *Beyond Scale: Small Models, Big Applications*](https://www.sundai.club/) (MIT, 30 Aug 2026). The organizers set one challenge: **make a small model smarter, not bigger.** This is a plan and a set of measurements for doing that honestly.
+Built for [Sundai Hack 138 — *Beyond Scale: Small Models, Big Applications*](https://www.sundai.club/) (MIT, 30 Aug 2026). The organizers set one challenge: **make a small model smarter, not bigger.** This repo contains a working live demonstration, its verifier tests, and the measurements behind its design.
 
 **Live:** https://plan-then-cull.wilson-af8.workers.dev
 
-MIT licensed. Everything here runs on one laptop with no API key.
+MIT licensed. All model inference runs locally on one laptop with no model API key. The optional audience dashboard uses the public web app and therefore needs internet access.
+
+---
+
+## Run the participatory lunar-route demo
+
+The live use case is a deliberately small, checkable routing problem. A toy lunar surface mesh has lost relay `C`; the system must find a route from `BASE` to `ROVER` using only real links, without repeated or offline nodes, with at most 9 ms total latency and at least 3 Mbps bottleneck bandwidth.
+
+`qwen3:8b` writes `check(answer)` once. Before that checker can grade anything, the runner locks it down with an AST gate, a known-good route, seven known-bad routes, and a comparison against all 326 possible simple `BASE`-to-`ROVER` paths in this graph. If those checks disagree, the demo fails closed. Then `qwen3:0.6b` proposes many routes and CPython executes the locked checker on every candidate. The public page shows the pull, rejection reasons, cull count, survivors, and winning verified route as they happen.
+
+### What the audience contributes
+
+Open the [live dashboard](https://plan-then-cull.wilson-af8.workers.dev/#live-demo) and press **Add one candidate** during the join window. Each distinct participant adds **one candidate to the search running on the host Mac**: 30 base attempts plus the audience count, capped at 100.
+
+The phones do **not** download or run a language model, and audience members do not need Python, Ollama, an account, or a command line. Their clicks widen one shared local search. That keeps the stage demo reliable on venue Wi-Fi and makes the claim precise: participation contributes search width, not phone compute.
+
+### Host setup and stage commands
+
+Run these from the repository root. The public-dashboard run expects the same ingest secret configured on the Worker as a single line in `.ingest-token`; keep that file untracked and restrict it with `chmod 600 .ingest-token`. `--dry-run` does not need the token.
+
+In the first terminal, start Ollama with parallel requests enabled (skip this if an Ollama server with that setting is already running):
+
+```bash
+OLLAMA_NUM_PARALLEL=8 ollama serve
+```
+
+In a second terminal, pull both models once:
+
+```bash
+ollama pull qwen3:8b
+ollama pull qwen3:0.6b
+```
+
+Prewarm both models before going on stage:
+
+```bash
+python3 demo/live_demo.py --warmup-only
+```
+
+Then open the dashboard for the room and start the live round:
+
+```bash
+python3 demo/live_demo.py
+```
+
+The default join window is 20 seconds. With both models warm, allow roughly **25–35 seconds after that window closes**, or about **45–55 seconds from command to result**. In one 30-candidate rehearsal, 8 routes survived and the complete plan/check/sample/cull run took **27.8 seconds** after a zero-second join window; candidate sampling itself took **6.7 seconds**. Local model timings vary substantially between runs, so treat those as stage-planning ranges, not a latency guarantee. A cold model load can add roughly 15 seconds, which is why prewarming matters.
+
+For a rehearsal that neither opens the audience join window nor updates the public dashboard:
+
+```bash
+python3 demo/live_demo.py --join-seconds 0 --dry-run
+```
+
+This challenge is an **educational simulation**, not a flight system. Its graph, link latency, and bandwidth values are synthetic. It does not use NASA or ESA operational data, control hardware, route real communications, or make a safety decision. The point is to make small-model test-time search and executable verification visible—not to claim the demo is ready for lunar operations.
 
 ---
 
@@ -45,7 +98,7 @@ The capability didn't come from the model. It came from **the structure around t
 
 ---
 
-## The one thing we changed
+## The failure mode we close
 
 Here is the loose thread we pulled on.
 
@@ -53,13 +106,11 @@ In DisCIPL, **the checking program is written by a model.** It's a good program,
 
 The paper says so itself: bugs in generated programs can *"yield incorrect outputs without triggering any errors."*
 
-So our change is small and stubborn:
+Merely executing a model-written checker does not prove that the checker encodes the right rules. A vacuous `check()` that always returns `True` is valid Python and still approves every bad answer. So our change is small and stubborn:
 
-> **The verifier is a Python interpreter, not a model.**
->
-> `check(text) -> bool` actually runs. If the sentence has a word that doesn't start with S, the function returns `False`, and no amount of confident prose changes that.
+> **Do not trust the generated checker until it accepts a known-good answer and rejects known-bad answers. Then lock it and execute it, rather than asking another model to judge prose.**
 
-An interpreter cannot be talked into agreeing with you. That's the whole pitch.
+For the live challenge, that gate also compares the generated checker with a hand-written reference across the graph's full finite route space. CPython then gives every candidate the same deterministic verdict. If validation fails or the two checkers ever disagree, the round fails closed.
 
 This is the same principle as [`reasoning-over-recall`](https://github.com/wilsonwu-ai/reasoning-over-recall) — *execute, don't judge* — applied to the hack's own source material.
 
@@ -73,7 +124,7 @@ We generated 21 candidate projects across seven framings, cut them to 8, and ran
 |---|---|---|
 | **Grammar Gate** | Make a bad token literally unsamplable via constrained decoding | Ollama's MLX engine **silently ignores** the JSON-schema `format` parameter. The demo would have looked like it worked all night and proved nothing. |
 | **Exchange Rate** | Measure how many verified samples of a 0.8B model equal one 4B model | An eval/leaderboard project. Sundai has shipped **five** of these in 2026 and ran a whole self-improving-evals hack six days before this one. Most-burned idea in the room. |
-| **Particle Room** | Every phone in the audience becomes one particle of a shared search | Depends on the room showing up and on conference wifi. Great when it works; nothing on screen when it doesn't. |
+| **Browser Particle Room** | Every phone downloads a model and becomes compute for one particle of a shared search | Depends on compatible phone hardware, a large model download, and conference Wi-Fi. The shipped audience interaction keeps inference on the host and lets each click add one host-side candidate instead. |
 | **Outvoted** | Replicate a result showing majority voting makes small models *worse* | A negative result is hard to show in two minutes, and the fix it proposed was unproven. |
 | **Anytime Arena** | A model in a 60fps game loop with a deadline it can't miss | Strong visual. But a no-model baseline beats it at 0ms unless the decision unit is a multi-move plan, which doubles the build. |
 | **Clean Room** | Private docs extracted in-browser with the wifi off | Real use case, but the demo is "nothing happens, securely." |
@@ -83,9 +134,9 @@ We generated 21 candidate projects across seven framings, cut them to 8, and ran
 **Why we picked this one:**
 
 1. **It answers the actual question.** The organizers linked a specific paper. Nobody at this venue has built it. Reading the assignment is a differentiator.
-2. **The contribution fits in one sentence.** *"The paper's verifier is written by a model; we replaced it with an interpreter, and measured what that changes."*
+2. **The contribution fits in one sentence.** *"The model writes the checker once; we challenge it before we lock it, then let CPython apply it consistently at search scale."*
 3. **It routes around every runtime bug we found** (see below) — as long as culling happens in rounds rather than as true parallel Sequential Monte Carlo.
-4. **The honest version is buildable in a day.** No LLaMPPL, no vLLM, no probabilistic-programming library. Plain Python.
+4. **The honest version was buildable in a day.** No LLaMPPL, no vLLM, no probabilistic-programming library. Plain Python.
 
 ---
 
@@ -105,13 +156,13 @@ The method wants many candidates at once. So the first question is whether askin
 
 Zero benefit. This reproduces [ollama#17666](https://github.com/ollama/ollama/issues/17666) on 0.31.1. It does not error — it just queues, and the natural misreading is *"small models are slow"* rather than *"my server is single-threaded."*
 
-Setting `OLLAMA_NUM_PARALLEL=8` helps, but nowhere near 8x:
+Setting `OLLAMA_NUM_PARALLEL=8` helps, but nowhere near 8x. In the latest sweep:
 
-| width | 1 | 2 | 4 | 8 | 16 |
-|---|---|---|---|---|---|
-| speedup (`qwen3:0.6b`) | 0.94x | 1.28x | 1.83x | **2.19x** | 2.21x |
+| width | 1 | 4 | 8 | 16 |
+|---|---|---|---|---|
+| speedup (`qwen3:0.6b`) | 1.10x | 2.78x | 2.62x | **3.26x** |
 
-**The ceiling is ~2.2x and it flattens after width 8.** Plan the particle budget around that number, not around the core count.
+**The best measured speedup is 3.26x at width 16.** The result is not monotonic and is still far below the requested concurrency, so plan the candidate budget around measurements rather than core count or `OLLAMA_NUM_PARALLEL` itself. These runs vary substantially; the ratios are more useful than any single timing.
 
 ### 2. `n > 1` is ignored
 
@@ -135,19 +186,17 @@ The obvious objection: this laptop can hold a 70B. Why not use it?
 
 Because on fixed hardware, **candidates and parameters come out of the same budget** — and this method's gain comes from candidates.
 
-![Candidate throughput vs model size](docs/exchange-rate.svg)
-
 | model | concurrent tok/s | parallelism ceiling | **candidates per 30s round** |
 |---|---|---|---|
-| `qwen3:0.6b` | **332.4** | 2.21x | **62** |
-| `qwen3:1.7b` | 153.2 | 1.76x | 29 |
-| `qwen3:8b` | 42.2 | 1.71x | **8** |
+| `qwen3:0.6b` | **696.9** | 3.26x | **131** |
+| `qwen3:1.7b` | 363.6 | 1.80x | 68 |
+| `qwen3:8b` | 95.2 | 1.34x | **18** |
 
-**13x the parameters costs about 8x the width.** The bigger model is also penalized twice — its parallelism ceiling is *worse*, because decode is memory-bandwidth-bound and 128 GB of capacity does nothing about bandwidth.
+These candidate counts normalize throughput to 160 tokens per answer; they are capacity estimates, not a promise that every task finishes in exactly 30 seconds. **13x the parameters costs about 7x the width.** The bigger model is also penalized twice — its parallelism ceiling is *worse*, because decode is memory-bandwidth-bound and 128 GB of capacity does nothing about bandwidth.
 
 So "small" here is not a constraint being tolerated. It is the correct engineering answer to *how do I afford sixty attempts.*
 
-The honest use of 128 GB is different: it holds an **8B Planner and a 0.6B Follower resident at the same time**, so the whole two-tier system runs offline on one laptop with no API key and no network.
+The honest use of 128 GB is different: it holds an **8B Planner and a 0.6B Follower resident at the same time**, so inference runs locally on one laptop with no model API key. Only the optional shared dashboard needs the network.
 
 ---
 
@@ -155,7 +204,7 @@ The honest use of 128 GB is different: it holds an **8B Planner and a 0.6B Follo
 
 Stated up front, because conceding limits before anyone asks is the point.
 
-- **We did not invent this.** The mechanism is DisCIPL's. Our change is the verifier.
+- **We did not invent this.** The mechanism is DisCIPL's. Our contribution is the generated-checker validation gate and the live, measured implementation.
 - **A round-based cull is not Sequential Monte Carlo.** Real SMC weights particles by conditional probability. We approximate with sequence-level pass/fail. Logprobs make the real thing *possible*, not *implemented*.
 - **An interpreter is a correctness filter, not a security boundary.** A subprocess with a timeout stops mistakes, not attackers.
 - **These numbers are Apple-platform-specific.** They were measured on one M4 Max. A 16 GB Mac does not even get the same Ollama backend. Compare checkpoints on one machine and say which.
@@ -165,13 +214,18 @@ Stated up front, because conceding limits before anyone asks is the point.
 
 ## Run it yourself
 
+Start one Ollama server in the first terminal:
+
 ```bash
-ollama serve
+OLLAMA_NUM_PARALLEL=8 ollama serve
+```
+
+Then use a second terminal:
+
+```bash
 ollama pull qwen3:0.6b     # 522 MB
 ollama pull qwen3:1.7b     # 1.4 GB
-
 python3 experiments/runtime_probe.py --model qwen3:1.7b --n 8
-OLLAMA_NUM_PARALLEL=8 ollama serve   # then, in another shell:
 python3 experiments/parallel_sweep.py --model qwen3:0.6b --widths 1,2,4,8,16
 ```
 

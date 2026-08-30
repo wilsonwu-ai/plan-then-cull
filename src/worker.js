@@ -10,6 +10,9 @@
  *   GET  /api/results   the runtime measurements as JSON
  *   GET  /api/round     the most recent round posted by the local runner
  *   POST /api/round     ingest a round  (Bearer INGEST_TOKEN)
+ *   GET  /api/live      strongly consistent public demo snapshot
+ *   POST /api/live/join anonymous, cookie-deduplicated audience join
+ *   POST /api/live/run  validated live state  (Bearer INGEST_TOKEN)
  *   GET  /health        liveness
  *
  * Two traps this file deliberately avoids, both learned the hard way:
@@ -23,6 +26,13 @@
 
 import { PAGE } from "./page.js";
 import { BENCH_PY_B64 } from "./bench_asset.js";
+import {
+  LIVE_SESSION_ID,
+  MAX_RUN_BYTES,
+  validateRunPayload,
+} from "./live_room.js";
+
+export { LiveRoom } from "./live_room.js";
 
 /* ---------------------------- leaderboard ----------------------------- *
  * POST /api/bench is PUBLIC and unauthenticated on purpose: the whole point
@@ -151,7 +161,172 @@ const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store",
   "access-control-allow-origin": "*",
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "no-referrer",
 };
+
+const BASE_SECURITY_HEADERS = {
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "no-referrer",
+  "x-frame-options": "DENY",
+  "permissions-policy": "camera=(), microphone=(), geolocation=()",
+};
+
+const PAGE_SECURITY_HEADERS = {
+  ...BASE_SECURITY_HEADERS,
+  "content-security-policy": [
+    "default-src 'self'",
+    "script-src 'unsafe-inline'",
+    "style-src 'unsafe-inline'",
+    "img-src 'self' data:",
+    "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+  ].join("; "),
+};
+
+function jsonError(error, status, extraHeaders = {}) {
+  return new Response(JSON.stringify({ error }), {
+    status,
+    headers: { ...JSON_HEADERS, ...extraHeaders },
+  });
+}
+
+function withHeaders(response, headers) {
+  const next = new Response(response.body, response);
+  for (const [name, value] of Object.entries(headers)) next.headers.set(name, value);
+  return next;
+}
+
+async function constantTimeEqual(left, right) {
+  const encoder = new TextEncoder();
+  const [leftHash, rightHash] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(left)),
+    crypto.subtle.digest("SHA-256", encoder.encode(right)),
+  ]);
+  const a = new Uint8Array(leftHash);
+  const b = new Uint8Array(rightHash);
+  let difference = 0;
+  for (let i = 0; i < a.length; i++) difference |= a[i] ^ b[i];
+  return difference === 0;
+}
+
+async function readJsonLimited(request, maxBytes) {
+  const declared = request.headers.get("content-length");
+  if (declared !== null) {
+    const declaredBytes = Number(declared);
+    if (!Number.isFinite(declaredBytes) || declaredBytes < 0 || declaredBytes > maxBytes) {
+      return { error: "body_too_large", status: 413 };
+    }
+  }
+  if (!request.body) return { error: "bad_json", status: 400 };
+
+  const reader = request.body.getReader();
+  const chunks = [];
+  let total = 0;
+  while (true) {
+    const part = await reader.read();
+    if (part.done) break;
+    total += part.value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      return { error: "body_too_large", status: 413 };
+    }
+    chunks.push(part.value);
+  }
+
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return { value: JSON.parse(new TextDecoder().decode(bytes)) };
+  } catch (error) {
+    return { error: "bad_json", status: 400 };
+  }
+}
+
+async function hasRequestBodyBytes(request) {
+  const declared = request.headers.get("content-length");
+  if (declared !== null && Number(declared) > 0) return true;
+  if (!request.body) return false;
+  const reader = request.body.getReader();
+  while (true) {
+    const part = await reader.read();
+    if (part.done) return false;
+    if (part.value.byteLength > 0) {
+      await reader.cancel();
+      return true;
+    }
+  }
+}
+
+function liveRoom(env) {
+  return env.LIVE_ROOM.getByName(LIVE_SESSION_ID);
+}
+
+async function handleLive(request, env, route) {
+  if (!env.LIVE_ROOM) return jsonError("live_room_not_bound", 503);
+
+  if (route === "state") {
+    if (request.method !== "GET") return jsonError("method_not_allowed", 405, { allow: "GET" });
+    const response = await liveRoom(env).fetch("https://live.internal/state");
+    return withHeaders(response, BASE_SECURITY_HEADERS);
+  }
+
+  if (route === "join") {
+    if (request.method !== "POST") return jsonError("method_not_allowed", 405, { allow: "POST" });
+    const url = new URL(request.url);
+    const origin = request.headers.get("origin");
+    const fetchSite = request.headers.get("sec-fetch-site");
+    if (origin !== url.origin || (fetchSite && fetchSite !== "same-origin")) {
+      return jsonError("same_origin_required", 403);
+    }
+    if (await hasRequestBodyBytes(request)) return jsonError("join_body_not_allowed", 400);
+
+    const response = await liveRoom(env).fetch("https://live.internal/join", {
+      method: "POST",
+      headers: { cookie: request.headers.get("cookie") || "" },
+    });
+    return withHeaders(response, BASE_SECURITY_HEADERS);
+  }
+
+  if (route === "run") {
+    if (request.method !== "POST") return jsonError("method_not_allowed", 405, { allow: "POST" });
+    const auth = request.headers.get("authorization") || "";
+    const expected = "Bearer " + (env.INGEST_TOKEN || "");
+    if (!env.INGEST_TOKEN || !(await constantTimeEqual(auth, expected))) {
+      return jsonError("unauthorized", 401);
+    }
+    const contentType = request.headers.get("content-type") || "";
+    if (!contentType.toLowerCase().startsWith("application/json")) {
+      return jsonError("content_type_must_be_json", 415);
+    }
+
+    const parsed = await readJsonLimited(request, MAX_RUN_BYTES);
+    if (parsed.error) return jsonError(parsed.error, parsed.status);
+    const validated = validateRunPayload(parsed.value);
+    if (!validated.ok) {
+      return new Response(JSON.stringify({ error: "invalid_run", fields: validated.errors }), {
+        status: 422,
+        headers: JSON_HEADERS,
+      });
+    }
+
+    const response = await liveRoom(env).fetch("https://live.internal/run", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(validated.value),
+    });
+    return withHeaders(response, BASE_SECURITY_HEADERS);
+  }
+
+  return jsonError("not_found", 404);
+}
 
 async function handleRound(request, env) {
   if (request.method === "GET") {
@@ -212,6 +387,18 @@ export default {
       return new Response(JSON.stringify(MEASUREMENTS, null, 2), { headers: JSON_HEADERS });
     }
 
+    if (url.pathname === "/api/live") {
+      return handleLive(request, env, "state");
+    }
+
+    if (url.pathname === "/api/live/join") {
+      return handleLive(request, env, "join");
+    }
+
+    if (url.pathname === "/api/live/run") {
+      return handleLive(request, env, "run");
+    }
+
     if (url.pathname === "/api/round") {
       return handleRound(request, env);
     }
@@ -228,6 +415,7 @@ export default {
           "content-type": "text/plain; charset=utf-8",
           "cache-control": "no-store",
           "access-control-allow-origin": "*",
+          ...BASE_SECURITY_HEADERS,
         },
       });
     }
@@ -237,6 +425,7 @@ export default {
         headers: {
           "content-type": "text/html; charset=utf-8",
           "cache-control": "no-store",
+          ...PAGE_SECURITY_HEADERS,
         },
       });
     }

@@ -279,6 +279,87 @@ export const PAGE = `<!doctype html>
     font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.8rem; color:var(--muted);
     white-space:pre-wrap; word-break:break-word; min-height:3.5rem;
   }
+  .live-participation{display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1rem}
+  .join-card,.host-card{
+    min-width:0; padding:1rem; border:1px solid var(--rule); border-radius:6px; background:var(--wash);
+  }
+  .join-card{border-color:var(--accent); background:var(--accent-tint)}
+  .join-card h3,.host-card h3{margin:0 0 .4rem; font-size:.92rem}
+  .join-card p,.host-card p{margin:0 0 .75rem; color:var(--muted); font-size:.76rem; line-height:1.45}
+  .join-button{
+    width:100%; min-height:2.8rem; padding:.65rem .9rem; border:1px solid var(--accent-strong);
+    border-radius:5px; color:var(--paper); background:var(--accent-strong); font:600 .78rem 'Geist Mono',ui-monospace,Menlo,monospace;
+    cursor:pointer;
+  }
+  .join-button:hover{filter:brightness(1.06)}
+  .join-button:focus-visible{outline:3px solid var(--info); outline-offset:2px}
+  .join-button:disabled{cursor:not-allowed; opacity:.65; filter:none}
+  .join-message{min-height:1.2rem; margin:.55rem 0 0; color:var(--accent-strong); font-size:.7rem; line-height:1.35}
+  .room-counts{display:grid; grid-template-columns:1fr 1fr; gap:.55rem}
+  .room-count{
+    padding:.65rem; border:1px solid var(--rule); border-radius:5px; background:var(--card); text-align:center;
+  }
+  .room-count strong{display:block; color:var(--ink); font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:1.35rem; line-height:1.2}
+  .room-count span{color:var(--soft); font-size:.62rem; line-height:1.25}
+  .live-divider{height:1px; margin:1rem 0; background:var(--rule)}
+  .route-task{
+    display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:.55rem; align-items:stretch;
+  }
+  .route-point{
+    min-width:0; padding:.8rem; display:flex; flex-direction:column; justify-content:center;
+    border:1px solid var(--rule); border-radius:6px; background:var(--wash); text-align:center;
+  }
+  .route-point.offline{color:var(--bad); border-color:var(--bad); background:var(--bad-tint)}
+  .route-point strong{font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.78rem}
+  .route-point span{margin-top:.12rem; color:var(--soft); font-size:.62rem}
+  .route-point.offline span{color:var(--bad)}
+  .route-arrow{align-self:center; color:var(--soft); font-weight:700}
+  .route-constraints{display:flex; flex-wrap:wrap; gap:.45rem; margin:.75rem 0 0}
+  .topology-edges{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.4rem; margin-top:.65rem}
+  .topology-edge{
+    min-width:0; display:flex; align-items:center; justify-content:space-between; gap:.55rem; padding:.38rem .5rem;
+    border:1px solid var(--rule); border-radius:4px; background:var(--wash); color:var(--muted); font-size:.65rem;
+  }
+  .topology-edge strong{color:var(--ink); font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.64rem}
+  .topology-edge.offline{color:var(--bad); border-color:var(--bad); background:var(--bad-tint)}
+  .topology-edge.offline strong{color:var(--bad); text-decoration:line-through}
+  .topology-edge.limited{color:var(--bad); border-color:var(--bad); background:var(--bad-tint)}
+  .topology-edge.limited strong{color:var(--bad)}
+  .checker-line{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.55rem}
+  .checker-state{
+    min-width:0; padding:.65rem; border:1px solid var(--rule); border-radius:5px; background:var(--wash);
+  }
+  .checker-state span{display:block; color:var(--soft); font-size:.58rem; letter-spacing:.08em; text-transform:uppercase}
+  .checker-state strong{display:block; margin-top:.2rem; color:var(--ink); font-size:.76rem; line-height:1.3; overflow-wrap:anywhere}
+  .live-metrics{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.55rem; margin-top:.75rem}
+  .live-metric{
+    min-width:0; padding:.72rem; border:1px solid var(--rule); border-radius:5px; background:var(--card); text-align:center;
+  }
+  .live-metric strong{display:block; color:var(--ink); font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:1.05rem; line-height:1.2; overflow-wrap:anywhere}
+  .live-metric span{display:block; margin-top:.18rem; color:var(--soft); font-size:.6rem; text-transform:uppercase; letter-spacing:.06em}
+  .live-metric.good{border-color:var(--good); background:var(--good-tint)}
+  .live-metric.good strong{color:var(--good)}
+  .live-metric.bad{border-color:var(--bad); background:var(--bad-tint)}
+  .live-metric.bad strong{color:var(--bad)}
+  .rejection-wrap{margin-top:.8rem}
+  .rejection-wrap h3,.result-route h3{margin:0 0 .5rem; font-size:.78rem}
+  .rejection-list{display:flex; flex-wrap:wrap; gap:.45rem}
+  .rejection-item{
+    display:inline-flex; gap:.4rem; align-items:center; padding:.3rem .5rem; border:1px solid var(--rule);
+    border-radius:999px; background:var(--wash); color:var(--muted); font-size:.66rem;
+  }
+  .rejection-item strong{color:var(--bad); font-family:'Geist Mono',ui-monospace,Menlo,monospace}
+  .result-route{margin-top:.9rem; padding:.85rem; border:1px solid var(--good); border-radius:6px; background:var(--good-tint)}
+  .route-result{display:flex; flex-wrap:wrap; gap:.35rem; align-items:center}
+  .route-result-node{
+    padding:.35rem .55rem; border:1px solid var(--good); border-radius:4px; color:var(--good); background:var(--card);
+    font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.72rem; font-weight:700;
+  }
+  .route-result-arrow{color:var(--good); font-weight:700}
+  .result-facts{display:flex; flex-wrap:wrap; gap:.45rem; margin-top:.65rem}
+  .live-raw{margin-top:1rem; color:var(--soft); font-size:.72rem}
+  .live-raw summary{cursor:pointer; color:var(--muted)}
+  .live-raw .live{margin-top:.65rem}
   .glossary dt{font-weight:600; margin-top:1rem}
   .glossary dd{margin:.2rem 0 0; color:var(--muted)}
   footer{margin-top:4rem; padding-top:1.25rem; border-top:1px solid var(--rule);
@@ -294,6 +375,11 @@ export const PAGE = `<!doctype html>
     .trust-row{grid-template-columns:1fr}
     .trust-who{padding-top:.2rem}
     .legend-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .live-participation{grid-template-columns:1fr}
+    .route-task{grid-template-columns:1fr}
+    .route-arrow{justify-self:center; transform:rotate(90deg)}
+    .checker-line{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .topology-edges{grid-template-columns:1fr}
   }
   @media (max-width:600px){
     body{font-size:16px; padding:1.5rem 1.1rem 4rem}
@@ -309,6 +395,7 @@ export const PAGE = `<!doctype html>
     .constraint-rule{align-items:flex-start; flex-direction:column}
     .constraint-rule strong{text-align:left}
     .privacy-strip{grid-template-columns:1fr}
+    .live-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
     table{display:block; max-width:100%; overflow-x:auto}
     .wide-diagram{overflow-x:auto; padding-bottom:.25rem}
     .wide-diagram svg{min-width:520px}
@@ -320,7 +407,7 @@ export const PAGE = `<!doctype html>
 
   <p class="eyebrow">plan-then-cull &middot; Sundai Hack 138 &middot; MIT &middot; 30 August 2026</p>
   <h1>Distillation</h1>
-  <p class="lede"><b>Part one: pull and cull.</b> Pull sixty attempts from a tiny model. Cull
+  <p class="lede"><b>Part one: pull and cull.</b> Pull thirty attempts from a tiny model. Cull
   the ones that fail a Python test written once by a bigger model.</p>
   <p class="sub"><b>Part two: train on the survivors.</b> This hack builds part one. Nothing is
   trained yet; the survivors can later become mechanically checked training examples.</p>
@@ -410,6 +497,135 @@ export const PAGE = `<!doctype html>
     the survivors can become training examples.</p>
   </section>
 
+  <!-- ======================== LIVE AUDIENCE DEMO ======================== -->
+  <section data-visual="live-round" id="live-demo">
+    <p class="step-label">Live experiment &mdash; join now</p>
+    <h2>Route around a failed lunar relay. Watch every rejected attempt.</h2>
+
+    <p>OpenAI showed that many attempts can put a passing answer in the pile. Now we test the
+    missing piece live: can a tiny local model create that pile quickly, and can executable
+    code find a valid result?</p>
+
+    <p><a href="https://coe.northeastern.edu/people/baena-eduardo/">Eduardo Baena</a>, a
+    Postdoctoral Research Fellow at Northeastern University's Institute for Intelligent
+    Networked Systems, used autonomous space networks to make the edge constraint concrete:
+    connectivity can disappear while power and local compute remain limited. This demo puts a
+    <code>qwen3:0.6b</code> model inside a routing system instead of asking it to imitate a
+    frontier chatbot.</p>
+
+    <div class="note"><b>Scope:</b> this is a toy constrained-systems demonstration inspired
+    by Eduardo's Sundai presentation. It is not NASA work, flight software, or safety-certified
+    software. Running more attempts at inference is <b>test-time compute</b>; no model weights
+    change here.</div>
+
+    <p>The broader systems point from today's talks is not to use a 0.6B model as a worse chat
+    assistant. Put it inside a workflow as a routing primitive, verifier, query-planning step,
+    packet filter, or CI check; accept what can be verified and escalate the rest. That matches
+    the heterogeneous-agent recommendation in the NVIDIA Research position paper
+    <a href="https://arxiv.org/abs/2506.02153"><em>Small Language Models are the Future of
+    Agentic AI</em></a>. It does not mean this whole 30-candidate run finishes below 10 ms.</p>
+
+    <figure class="viz" id="round-visual" aria-labelledby="round-viz-title round-viz-desc">
+      <p class="viz-kicker">Audience plus one host Mac</p>
+      <div class="viz-title" id="round-viz-title">Tap once to add one candidate. Wilson's Mac does the inference.</div>
+
+      <div class="live-participation">
+        <div class="join-card">
+          <h3>Add one candidate to the live run</h3>
+          <p>Your tap raises the target by one. Your phone sends a small join request; it does
+          not run or download the model, and it does not upload any personal file or prompt.</p>
+          <button class="join-button" id="joinLive" type="button" disabled>Checking room&hellip;</button>
+          <p class="join-message" id="joinMessage" role="status" aria-live="polite">Checking the live room before accepting joins.</p>
+        </div>
+        <div class="host-card">
+          <h3>The model stays on Wilson's host Mac</h3>
+          <p>The host starts with thirty candidates. Each audience join adds one more local
+          generation, up to 100. This page only requests work and displays authenticated
+          progress.</p>
+          <div class="room-counts" aria-label="Audience and candidate totals">
+            <div class="room-count"><strong id="audienceJoined">0</strong><span>audience joined</span></div>
+            <div class="room-count"><strong id="candidateTarget">30</strong><span>candidate target</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="src">Preflight on this M4 Max: 30 candidates, 8 survivors, 6.7 seconds of
+      small-model sampling, and 27.8 seconds end to end including checker generation and
+      validation. The live time changes with the audience target.</p>
+
+      <div class="live-divider"></div>
+      <p class="viz-kicker">The task</p>
+      <div class="viz-title">Node C is offline. Return a JSON route from BASE to ROVER.</div>
+      <div class="route-task" aria-label="Route from base through a network with node C offline to the rover">
+        <div class="route-point"><strong>BASE</strong><span>start</span></div>
+        <span class="route-arrow" aria-hidden="true">&rarr;</span>
+        <div class="route-point offline"><strong>A &middot; B &middot; <s>C</s> &middot; D &middot; E</strong><span>C offline &middot; choose real links</span></div>
+        <span class="route-arrow" aria-hidden="true">&rarr;</span>
+        <div class="route-point"><strong>ROVER</strong><span>destination</span></div>
+      </div>
+      <div class="route-constraints" aria-label="Executable route constraints">
+        <span class="viz-chip info">valid JSON route</span>
+        <span class="viz-chip bad">never use C</span>
+        <span class="viz-chip">real hops only</span>
+        <span class="viz-chip">no repeated node</span>
+        <span class="viz-chip good">latency &le; 9 ms</span>
+        <span class="viz-chip good">bandwidth &ge; 3 Mbps</span>
+      </div>
+      <div class="topology-edges" aria-label="Available undirected links with latency and bandwidth">
+        <div class="topology-edge"><strong>BASE &harr; A</strong><span>2 ms &middot; 4 Mbps</span></div>
+        <div class="topology-edge"><strong>BASE &harr; B</strong><span>3 ms &middot; 5 Mbps</span></div>
+        <div class="topology-edge offline"><strong>A &harr; C</strong><span>offline endpoint</span></div>
+        <div class="topology-edge"><strong>A &harr; D</strong><span>4 ms &middot; 3 Mbps</span></div>
+        <div class="topology-edge"><strong>B &harr; D</strong><span>2 ms &middot; 4 Mbps</span></div>
+        <div class="topology-edge limited"><strong>B &harr; E</strong><span>2 ms &middot; 2 Mbps &middot; too narrow</span></div>
+        <div class="topology-edge"><strong>D &harr; E</strong><span>1 ms &middot; 3 Mbps</span></div>
+        <div class="topology-edge"><strong>D &harr; ROVER</strong><span>4 ms &middot; 3 Mbps</span></div>
+        <div class="topology-edge"><strong>E &harr; ROVER</strong><span>2 ms &middot; 4 Mbps</span></div>
+        <div class="topology-edge offline"><strong>C &harr; ROVER</strong><span>offline endpoint</span></div>
+      </div>
+
+      <div class="live-divider"></div>
+      <p class="viz-kicker">Checker gate</p>
+      <div class="checker-line" aria-label="Checker validation state" role="status" aria-live="polite">
+        <div class="checker-state"><span>Checker</span><strong id="checkerGenerated">waiting</strong></div>
+        <div class="checker-state"><span>Known-good probe</span><strong id="checkerGoodProbe">waiting</strong></div>
+        <div class="checker-state"><span>Known-bad probe</span><strong id="checkerBadProbe">waiting</strong></div>
+        <div class="checker-state"><span>Gate</span><strong id="checkerLocked">waiting</strong></div>
+      </div>
+
+      <div class="live-metrics" id="liveSummary" role="status" aria-live="polite" aria-atomic="false">
+        <div class="live-metric"><strong id="roundGenerated">&mdash;</strong><span>Pull &middot; generated</span></div>
+        <div class="live-metric"><strong id="roundChecked">&mdash;</strong><span>Check &middot; checked</span></div>
+        <div class="live-metric bad"><strong id="roundCulled">&mdash;</strong><span>Cull &middot; rejected</span></div>
+        <div class="live-metric good"><strong id="roundSurvived">&mdash;</strong><span>Keep &middot; survived</span></div>
+        <div class="live-metric"><strong id="roundElapsed">&mdash;</strong><span>elapsed</span></div>
+        <div class="live-metric"><strong id="roundExit">standby</strong><span>Exit &middot; status</span></div>
+      </div>
+
+      <div class="rejection-wrap">
+        <h3>Why candidates were culled</h3>
+        <div class="rejection-list" id="rejectionList" role="status" aria-live="polite"><span class="rejection-item">No rejected candidates yet.</span></div>
+      </div>
+
+      <div class="result-route">
+        <h3>Final verified route</h3>
+        <div class="route-result" id="resultRoute" role="status" aria-live="polite"><span class="route-result-node">waiting for a survivor</span></div>
+        <div class="result-facts">
+          <span class="viz-chip good">latency <b id="resultLatency">&mdash;</b></span>
+          <span class="viz-chip good">bottleneck <b id="resultBandwidth">&mdash;</b></span>
+        </div>
+      </div>
+
+      <details class="live-raw">
+        <summary>Raw live record</summary>
+        <div class="live" id="live">connecting...</div>
+      </details>
+      <figcaption id="round-viz-desc">The larger model writes one checker and must pass a
+      known-good and known-bad probe before it locks. The tiny model generates routes; CPython
+      applies the same network constraints to every candidate. The exit is success, budget,
+      or collapse. Phones only add host-side work.</figcaption>
+    </figure>
+  </section>
+
   <!-- ============================ SITUATION ============================ -->
   <section data-visual="situation-constraint">
     <p class="step-label">Why this matters &mdash; the problem</p>
@@ -463,7 +679,7 @@ export const PAGE = `<!doctype html>
     <p class="step-label">Part one &mdash; pull and cull</p>
     <h2>Stop asking the model to be right. Ask it many times, and check.</h2>
 
-    <p>If one attempt from a small model is unreliable, sixty attempts are sixty chances that
+    <p>If one attempt from a small model is unreliable, thirty attempts are thirty chances that
     <em>at least one</em> is correct. That is only useful if you can tell which one. So the
     real problem is not generation. It is <b>checking</b>.</p>
 
@@ -519,7 +735,7 @@ export const PAGE = `<!doctype html>
             <span class="terminal-name">runner &middot; qwen3:0.6b + CPython</span>
             <span class="terminal-badge">illustrative</span>
           </div>
-          <pre class="terminal-body"><code><span class="term-model">[qwen3:0.6b]</span> pull 60 attempts
+          <pre class="terminal-body"><code><span class="term-model">[qwen3:0.6b]</span> pull 30 attempts
 
 <span class="term-dim">[01]</span> Small silver stars glow softly
      <span class="term-fail">FAIL</span>
@@ -527,12 +743,12 @@ export const PAGE = `<!doctype html>
      <span class="term-pass">PASS</span>
 <span class="term-dim">[03]</span> Seven bright stars shine slowly
      <span class="term-fail">FAIL</span>
-<span class="term-dim"> ... 56 more attempts ...</span>
-<span class="term-dim">[60]</span> Soft summer skies stay sunny
+<span class="term-dim"> ... 26 more attempts ...</span>
+<span class="term-dim">[30]</span> Soft summer skies stay sunny
      <span class="term-pass">PASS</span>
 
-<span class="term-key">[CPython]</span> checked 60 of 60
-<span class="term-fail">[cull]</span>     56 deleted
+<span class="term-key">[CPython]</span> checked 30 of 30
+<span class="term-fail">[cull]</span>     26 deleted
 <span class="term-pass">[keep]</span>      4 survived
 
 <span class="term-answer">answer  Silent silver stars shine softly</span>
@@ -549,7 +765,7 @@ export const PAGE = `<!doctype html>
     <svg viewBox="0 0 520 588" role="img" aria-labelledby="flow-title flow-desc">
       <title id="flow-title">The three steps of plan-then-cull</title>
       <desc id="flow-desc">Step one: a big model, qwen3 8b, writes a check function once.
-      Step two: a tiny model, qwen3 0.6b, writes sixty different attempts at the answer.
+      Step two: a tiny model, qwen3 0.6b, writes thirty different attempts at the answer.
       Step three: the CPython interpreter runs the check on every attempt and deletes the
       ones that fail. A few survivors remain, and the loop repeats with those until one
       passes.</desc>
@@ -582,13 +798,13 @@ export const PAGE = `<!doctype html>
       <!-- STEP 2 -->
       <rect x="60" y="120" width="400" height="64" rx="6" fill="var(--card)" stroke="var(--rule)"/>
       <text x="76" y="142" fill="var(--accent)" font-size="10" font-weight="600"
-            font-family="'Geist Mono',ui-monospace,Menlo,monospace" letter-spacing="1.4">STEP 2 &#183; RUNS SIXTY TIMES</text>
+            font-family="'Geist Mono',ui-monospace,Menlo,monospace" letter-spacing="1.4">STEP 2 &#183; RUNS THIRTY TIMES</text>
       <text x="76" y="162" fill="var(--ink)" font-size="15" font-weight="600"
-            font-family="'Geist',sans-serif">Tiny model writes 60 attempts</text>
+            font-family="'Geist',sans-serif">Tiny model writes 30 attempts</text>
       <text x="76" y="178" fill="var(--muted)" font-size="11"
             font-family="'Geist Mono',ui-monospace,Menlo,monospace">qwen3:0.6b &#183; temperature 0.8 &#183; all different</text>
 
-      <!-- attempt tiles: 20 shown, standing in for 60 -->
+      <!-- attempt tiles: 20 shown, standing in for 30 -->
       <g>
         <rect x="60" y="196" width="16" height="24" rx="2" fill="var(--wash)" stroke="var(--rule)"/>
         <rect x="80" y="196" width="16" height="24" rx="2" fill="var(--wash)" stroke="var(--rule)"/>
@@ -679,9 +895,9 @@ export const PAGE = `<!doctype html>
       <text x="240" y="529" fill="var(--soft)" font-size="11"
             font-family="'Geist Mono',ui-monospace,Menlo,monospace">deleted</text>
       <text x="352" y="529" fill="var(--soft)" font-size="11"
-            font-family="'Geist Mono',ui-monospace,Menlo,monospace">20 of 60 shown</text>
+            font-family="'Geist Mono',ui-monospace,Menlo,monospace">20 of 30 shown</text>
     </svg>
-    <figcaption>The expensive model runs once. The cheap model runs sixty times.
+    <figcaption>The expensive model runs once. The cheap model runs thirty times.
     The interpreter decides.</figcaption>
     </figure>
 
@@ -691,16 +907,17 @@ export const PAGE = `<!doctype html>
     It writes the thing that decides whether an answer is acceptable. This happens
     <b>one time</b>, so the expensive model is a tiny part of the bill.</p>
 
-    <h3>Step 2 &mdash; The tiny model writes sixty attempts</h3>
-    <p><code>qwen3:0.6b</code> writes <b>sixty separate, different answers to the same
-    question.</b> Not one answer sixty times slower &mdash; sixty distinct attempts. They
+    <h3>Step 2 &mdash; The tiny model writes thirty attempts</h3>
+    <p><code>qwen3:0.6b</code> writes <b>thirty separate, different answers to the same
+    question.</b> Not one answer thirty times slower &mdash; thirty distinct attempts. They
     differ because the model samples randomly
-    (<dfn title="A setting that controls randomness. 0 gives the same answer every time; higher values give varied answers">temperature</dfn>
+    (<dfn title="A setting that controls sampling randomness. Lower values reduce variation; higher values encourage it">temperature</dfn>
     is set to 0.8, so each run takes a different path).</p>
 
     <h3>Step 3 &mdash; A real interpreter grades them</h3>
-    <p>Each attempt is passed to <b>CPython 3.12</b> &mdash; the standard <code>python3</code>
-    that ships on any Mac or Linux box. The <code>check()</code> function actually runs.
+    <p>Each attempt is passed to <b>CPython 3.12</b> &mdash; the reference Python interpreter,
+    and the program behind many <code>python3</code> installations. The <code>check()</code>
+    function actually runs.
     Attempts that return false are deleted. Survivors go around again.</p>
 
     <h3>What is actually being checked &mdash; and what is not</h3>
@@ -754,7 +971,7 @@ export const PAGE = `<!doctype html>
 
     <p>A fair reader stops here and says: the rule was written by a model too. If
     <code>qwen3:8b</code> writes a <em>wrong</em> <code>check()</code>, then CPython enforces
-    the wrong rule perfectly, on all sixty candidates, without complaint. Garbage in,
+    the wrong rule perfectly, on all thirty candidates, without complaint. Garbage in,
     rigorously verified garbage out.</p>
 
     <p><b>That objection is correct, and it is worth stating plainly rather than defending
@@ -763,15 +980,15 @@ export const PAGE = `<!doctype html>
     <table>
       <thead><tr><th></th><th>A model grades each answer</th><th>A model writes one rule, a machine enforces it</th></tr></thead>
       <tbody>
-        <tr><td><b>Things that can be wrong</b></td><td class="n">60 separate judgments</td><td class="n">1 rule</td></tr>
+        <tr><td><b>Things that can be wrong</b></td><td class="n">30 separate judgments</td><td class="n">1 rule</td></tr>
         <tr><td><b>Can a human read it?</b></td><td>No</td><td>Yes &mdash; it is a few lines of Python</td></tr>
         <tr><td><b>Can you test it?</b></td><td>Not really</td><td>Yes, in seconds</td></tr>
         <tr><td><b>Same answer twice?</b></td><td>Not guaranteed</td><td>Guaranteed</td></tr>
-        <tr class="focal"><td><b>Where the risk sits</b></td><td>Spread across 60 opaque calls</td><td>Concentrated in 1 auditable artifact</td></tr>
+        <tr class="focal"><td><b>Where the risk sits</b></td><td>Spread across 30 opaque calls</td><td>Concentrated in 1 auditable artifact</td></tr>
       </tbody>
     </table>
 
-    <p>One thing to get right instead of sixty, and you can actually look at it. That is the
+    <p>One thing to get right instead of thirty, and you can actually look at it. That is the
     honest claim. It is narrower than "the interpreter cannot be argued with", which is what an
     earlier version of this page said &mdash; the interpreter cannot be argued with about
     <em>whether the rule was satisfied</em>, but it has no view on whether the rule was any
@@ -892,23 +1109,23 @@ export const PAGE = `<!doctype html>
       <div class="num focal">
         <div class="big">131</div>
         <div>
-          <p class="what">Attempts the tiny model produces in 30 seconds</p>
-          <p class="means">We ran <code>qwen3:0.6b</code> this morning and counted. One
-          "attempt" is one complete answer, about 160 words' worth. So in half a minute it
-          writes 131 full, different tries at the same problem. That is the raw material the
-          grader culls.</p>
+          <p class="what">Estimated 160-token candidates per 30 seconds</p>
+          <p class="means">We measured <code>qwen3:0.6b</code> at 697 generated tokens per
+          second under concurrent load. At a fixed budget of <b>160 output tokens per
+          candidate</b>, that throughput extrapolates to 131 candidate budgets in thirty
+          seconds. It is a normalized capacity estimate, not a count of 131 successful
+          end-to-end tasks.</p>
         </div>
       </div>
 
       <div class="num">
         <div class="big">18</div>
         <div>
-          <p class="what">Attempts the 8B model produces in the same 30 seconds</p>
-          <p class="means">Same clock, same machine, each model running at its own best
-          settings. <code>qwen3:8b</code> has about 13x the parameters and manages 18 attempts
-          instead of 131. <b>Going small did not save you money &mdash; it bought you
-          attempts.</b> The same half-minute buys either 131 tries or 18. Since this method
-          wins by having many tries to throw away, 131 beats 18.</p>
+          <p class="what">The same capacity estimate for the 8B model</p>
+          <p class="means">Same token budget, clock, and machine, with each model at its own
+          measured concurrent rate. <code>qwen3:8b</code> has about 13x the parameters and
+          budgets 18 candidates instead of 131. <b>Going small bought search width.</b> The
+          same half-minute budget supports roughly 131 short candidates or 18.</p>
         </div>
       </div>
 
@@ -941,7 +1158,7 @@ export const PAGE = `<!doctype html>
 
     <h3>The trade, in one table</h3>
     <table>
-      <thead><tr><th>Model</th><th class="n">Words/sec</th><th class="n">Attempts per 30s</th><th>What that buys</th></tr></thead>
+      <thead><tr><th>Model</th><th class="n">Tokens/sec</th><th class="n">160-token candidates/30s</th><th>What that buys</th></tr></thead>
       <tbody>
         <tr class="focal"><td>qwen3:0.6b</td><td class="n">697</td><td class="n">131</td><td>131 chances one is right</td></tr>
         <tr><td>qwen3:1.7b</td><td class="n">364</td><td class="n">68</td><td>68 chances</td></tr>
@@ -955,7 +1172,7 @@ export const PAGE = `<!doctype html>
     <div class="note">
       <b>How stable are these numbers?</b> Not very, and you should know that before you
       quote them. We ran the identical script twice on the identical machine, twelve hours
-      apart, and <code>qwen3:0.6b</code> came back at 332 words/sec the first time and 697 the
+      apart, and <code>qwen3:0.6b</code> came back at 332 tokens/sec the first time and 697 the
       second &mdash; because the first run happened while the laptop was busy with other work.
       <b>The ratios between models held; the absolute numbers did not.</b> That is why the
       benchmark below asks a whole room to run it: forty machines is a result, one machine
@@ -966,9 +1183,9 @@ export const PAGE = `<!doctype html>
   <!-- ============================ PART TWO ============================ -->
   <section data-visual="distillation-pipeline">
     <p class="step-label">Part two &mdash; train on the survivors</p>
-    <h2>Culling finds good answers. Training makes them stick.</h2>
+    <h2>Culling finds checked answers. Training could make the pattern stick.</h2>
 
-    <p>Part one happens at <b>question time</b>. You ask, we pull sixty attempts, cull the
+    <p>Part one happens at <b>question time</b>. You ask, we pull thirty attempts, cull the
     failures, and return what survived. The model itself is completely unchanged &mdash; it is
     exactly as capable afterward as it was before. Ask the same question tomorrow and you pay
     the whole cost again.</p>
@@ -977,7 +1194,7 @@ export const PAGE = `<!doctype html>
 
     <figure class="viz" id="distillation-visual" aria-labelledby="distillation-viz-title distillation-viz-desc">
       <p class="viz-kicker">The whole pipeline</p>
-      <div class="viz-title" id="distillation-viz-title">Part one makes verified examples. Part two makes the gain permanent.</div>
+      <div class="viz-title" id="distillation-viz-title">Part one makes checked examples. Part two could turn them into a lasting model change.</div>
       <div class="pipeline-stages" aria-hidden="true">
         <div class="stage-band">Part one &middot; this hack &middot; weights unchanged</div>
         <div class="stage-band next">Part two &middot; not built &middot; weights change</div>
@@ -985,7 +1202,7 @@ export const PAGE = `<!doctype html>
       <div class="viz-flow flow-4">
         <div class="viz-node" data-tone="info">
           <span class="node-label">Pull</span>
-          <strong class="node-value">60 attempts</strong>
+          <strong class="node-value">30 attempts</strong>
           <span class="node-copy">Tiny model explores many answers.</span>
         </div>
         <span class="viz-arrow" aria-hidden="true">&rarr;</span>
@@ -1002,14 +1219,14 @@ export const PAGE = `<!doctype html>
         </div>
         <span class="viz-arrow" aria-hidden="true">&rarr;</span>
         <div class="viz-node" data-tone="accent">
-          <span class="node-label">Train once</span>
+          <span class="node-label">Train later</span>
           <strong class="node-value">Later training stage</strong>
           <span class="node-copy">Distillation or self-training on checked data.</span>
         </div>
       </div>
-      <figcaption id="distillation-viz-desc">Stopping after the green box gives one better
-      answer but changes no weights. Repeating part one across many tasks creates the checked
-      dataset that a later distillation or self-training stage can use.</figcaption>
+      <figcaption id="distillation-viz-desc">Stopping after the green box gives one answer
+      that satisfies the checker but changes no weights. Repeating part one across many tasks
+      creates a checked dataset that a later distillation or self-training stage could use.</figcaption>
     </figure>
 
     <table>
@@ -1017,8 +1234,8 @@ export const PAGE = `<!doctype html>
       <tbody>
         <tr><td><b>When it happens</b></td><td>Every time you ask a question</td><td>Once, during training</td></tr>
         <tr><td><b>Does the model change?</b></td><td>No. Weights untouched.</td><td>Yes. Permanently.</td></tr>
-        <tr><td><b>What it costs</b></td><td>60x the compute, forever</td><td>One training run, then free</td></tr>
-        <tr><td><b>What you get</b></td><td>A better answer, this once</td><td>A better model</td></tr>
+        <tr><td><b>What it costs</b></td><td>Many generations for each query</td><td>A separate training run; inference still costs compute</td></tr>
+        <tr><td><b>What you get</b></td><td>A checked answer for this query</td><td>A candidate specialized model, if evaluation improves</td></tr>
       </tbody>
     </table>
 
@@ -1030,8 +1247,8 @@ export const PAGE = `<!doctype html>
     of answers. Done well, a small model ends up far better than its size would suggest,
     because it learned from a curated diet rather than the raw internet.</p>
 
-    <p>This is not a niche trick. It is a substantial part of why capable small models exist at
-    all, and it is what makes a model that fits on a laptop worth having.</p>
+    <p>This is one important way capable small models are produced. But it is not what this
+    live demo does: no optimizer runs and no weights change.</p>
 
     <h3>And here is the join</h3>
 
@@ -1040,20 +1257,27 @@ export const PAGE = `<!doctype html>
     mistakes. Worse, supervised training is intolerant in a way pretraining is not &mdash; a
     wrong example is not diluted among billions of tokens, it is <em>taught</em>.</p>
 
-    <p>So you want to filter the teacher's output before training on it. And filtering
-    generated candidates by executing them is&hellip; exactly what this page has been about.</p>
+    <p>So you want to filter teacher output before training on it. Executable checks are one
+    way to do that when correctness is mechanically decidable.</p>
+
+    <div class="note"><b>A terminology boundary that matters:</b> the candidates on this page
+    come from the tiny model itself. Training that model on its own checked survivors would be
+    <b>verification-filtered self-training</b>, not distillation by itself. It becomes
+    distillation when a larger teacher supplies behavior &mdash; such as plans, labels,
+    rationales, or feedback &mdash; that the student learns to reproduce. Neither training
+    path is built in this hack.</div>
 
     <div class="pull">Pull the candidates. Cull the failures.
     <b>Then train on the survivors.</b></div>
 
-    <p>Which means <b>plan-then-cull is the front half of a distillation pipeline</b>. The same
-    loop that gets you a good answer today can, pointed at a corpus instead of a question,
-    manufacture verified training data &mdash; every example of which is one whose code
-    actually ran and actually produced the stated answer.</p>
+    <p>Which means <b>plan-then-cull is the checked-data front half that either pipeline could
+    use</b>. Pointed at a corpus instead of one question, the same loop can manufacture examples
+    that satisfied an executable rule. A later project would still need to choose and evaluate
+    the actual training method.</p>
 
     <p>That is why <b>Distillation</b> sits at the top of this page even though this hack builds
-    only part one. Pull and cull gets a reliable answer out of an unreliable model now, and
-    creates the verified examples that can make it permanently smarter later.</p>
+    only part one. Pull and cull gets a rule-compliant answer out of an unreliable model now,
+    and creates checked examples that might support a lasting improvement later.</p>
   </section>
 
   <!-- ============================== Q&A ============================== -->
@@ -1079,7 +1303,7 @@ export const PAGE = `<!doctype html>
         </div>
         <div class="trust-row">
           <div class="trust-who">Tiny model</div>
-          <div class="trust-do"><b>Does</b>Generate sixty different attempts.</div>
+          <div class="trust-do"><b>Does</b>Generate thirty different attempts.</div>
           <div class="trust-limit"><b>Does not</b>Grade or certify its own output.</div>
         </div>
         <div class="trust-row">
@@ -1107,7 +1331,7 @@ export const PAGE = `<!doctype html>
 
     <h3>Does the big model write the answer that the small model tries to match?</h3>
     <p>No, and this is worth being clear about. <b>The big model never produces an answer.</b>
-    It writes a test and stops. The sixty attempts are never compared against a big-model
+    It writes a test and stops. The thirty attempts are never compared against a big-model
     answer &mdash; they are compared against a rule. The expensive model contributes the
     standard, not the content.</p>
 
@@ -1115,7 +1339,7 @@ export const PAGE = `<!doctype html>
     <p>Nobody, and this is the sharpest objection to the whole design. A model-written rule can
     be wrong, and the interpreter will then enforce something wrong with total consistency. What
     we get is not infallibility, it is <b>auditability</b>: one rule you can read and test,
-    instead of sixty judgments you cannot. Plus the two probes above &mdash; the rule must accept
+    instead of thirty judgments you cannot. Plus the two probes above &mdash; the rule must accept
     a known-good answer and reject a known-bad one before we trust it.</p>
 
     <h3>If the test is faulty, is the small model being trained on a broken system?</h3>
@@ -1143,7 +1367,7 @@ export const PAGE = `<!doctype html>
 
     <p>Everything above rests on numbers from a single machine, which we just admitted moved
     by 2x between two runs. The fix is more machines. <b>If you have Ollama with any model
-    pulled, two commands puts your laptop on the board.</b></p>
+    pulled, two commands put your laptop on the board.</b></p>
 
     <figure class="viz" id="benchmark-visual" aria-labelledby="benchmark-viz-title benchmark-viz-desc">
       <p class="viz-kicker">From your laptop to the room</p>
@@ -1184,8 +1408,9 @@ export const PAGE = `<!doctype html>
     <pre style="background:var(--wash);border:1px solid var(--rule);border-radius:6px;padding:1rem;overflow-x:auto;font-family:'Geist Mono',ui-monospace,Menlo,monospace;font-size:.85rem"><code style="background:none;border:none;padding:0">curl -sO https://plan-then-cull.wilson-af8.workers.dev/bench.py
 python3 bench.py</code></pre>
 
-    <p>It uses whatever model you already have &mdash; it will not download anything. It takes
-    about a minute. Add <code>--dry-run</code> to see your numbers without posting.</p>
+    <p>It uses a text-generation model you already have &mdash; it will not download anything.
+    Runtime depends on the model and machine; a loaded small model will usually finish much
+    sooner than a large one. Add <code>--dry-run</code> to see your numbers without posting.</p>
 
     <div class="note">
       <b>What it sends:</b> your display name, the model tag, your OS and CPU, and three
@@ -1201,51 +1426,6 @@ python3 bench.py</code></pre>
     </div>
 
     <div id="board"></div>
-  </section>
-
-  <!-- ============================== LIVE ============================== -->
-  <section data-visual="live-round">
-    <p class="step-label">Live</p>
-    <h2>Current round</h2>
-    <p>When the system is running, each round posts here: how many attempts were generated,
-    how many survived the interpreter, and what the surviving answer was.</p>
-
-    <figure class="viz" id="round-visual" aria-labelledby="round-viz-title round-viz-desc">
-      <p class="viz-kicker">Latest authenticated round</p>
-      <div class="viz-title" id="round-viz-title">Watch the population narrow to an exit.</div>
-      <div class="viz-flow flow-4">
-        <div class="viz-node" data-tone="info">
-          <span class="node-label">Pull</span>
-          <strong class="node-value" id="roundGenerated">&mdash;</strong>
-          <span class="node-copy">attempts generated</span>
-        </div>
-        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
-        <div class="viz-node">
-          <span class="node-label">Check</span>
-          <strong class="node-value" id="roundChecked">&mdash;</strong>
-          <span class="node-copy">run through CPython</span>
-        </div>
-        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
-        <div class="viz-node" data-tone="good">
-          <span class="node-label">Keep</span>
-          <strong class="node-value" id="roundSurvived">&mdash;</strong>
-          <span class="node-copy">survivors remain</span>
-        </div>
-        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
-        <div class="viz-node" data-tone="accent">
-          <span class="node-label">Exit</span>
-          <strong class="node-value" id="roundExit">standby</strong>
-          <span class="node-copy">success, budget, or collapse</span>
-        </div>
-      </div>
-      <div class="viz-evidence">
-        <span class="viz-chip good">Locked write &middot; ingest token</span>
-        <span class="viz-chip info">Open read &middot; polls every 5 seconds</span>
-      </div>
-      <figcaption id="round-viz-desc">The four values update when a recognized round payload
-      arrives. The complete record remains visible below as a safe text-only fallback.</figcaption>
-    </figure>
-    <div class="live" id="live" role="status" aria-live="polite" aria-atomic="true">connecting...</div>
   </section>
 
   <!-- ============================ GLOSSARY ============================ -->
@@ -1298,8 +1478,8 @@ python3 bench.py</code></pre>
     </figure>
     <dl class="glossary">
       <dt>Attempt (also: candidate)</dt>
-      <dd>One complete answer written by the model. Sixty attempts means sixty separate
-      answers to the same question, not one answer written sixty times.</dd>
+      <dd>One complete answer written by the model. Thirty attempts means thirty separate
+      answers to the same question, not one answer written thirty times.</dd>
       <dt>Width</dt>
       <dd>How many attempts you run at the same time. More width means more chances that one
       of them is correct.</dd>
@@ -1310,8 +1490,8 @@ python3 bench.py</code></pre>
       <code>qwen3:8b</code> has 8 billion. More parameters usually means more capable, slower,
       and more expensive.</dd>
       <dt>Temperature</dt>
-      <dd>How random the model's writing is. At 0 it gives the same answer every time, which
-      is useless here &mdash; we need sixty <em>different</em> attempts, so we use 0.8.</dd>
+      <dd>How random the model's sampling is. Lower values reduce variation; higher values
+      encourage different attempts. We use 0.8 because search needs diversity.</dd>
       <dt>CPython</dt>
       <dd>The standard Python interpreter, the program that runs when you type
       <code>python3</code>. We use it as the grader because it executes code rather than
@@ -1337,12 +1517,30 @@ python3 bench.py</code></pre>
   }
 
   var liveEl = document.getElementById('live');
+  var joinLiveEl = document.getElementById('joinLive');
+  var joinMessageEl = document.getElementById('joinMessage');
+  var audienceJoinedEl = document.getElementById('audienceJoined');
+  var candidateTargetEl = document.getElementById('candidateTarget');
+  var checkerGeneratedEl = document.getElementById('checkerGenerated');
+  var checkerGoodProbeEl = document.getElementById('checkerGoodProbe');
+  var checkerBadProbeEl = document.getElementById('checkerBadProbe');
+  var checkerLockedEl = document.getElementById('checkerLocked');
   var roundGeneratedEl = document.getElementById('roundGenerated');
   var roundCheckedEl = document.getElementById('roundChecked');
+  var roundCulledEl = document.getElementById('roundCulled');
   var roundSurvivedEl = document.getElementById('roundSurvived');
+  var roundElapsedEl = document.getElementById('roundElapsed');
   var roundExitEl = document.getElementById('roundExit');
+  var rejectionListEl = document.getElementById('rejectionList');
+  var resultRouteEl = document.getElementById('resultRoute');
+  var resultLatencyEl = document.getElementById('resultLatency');
+  var resultBandwidthEl = document.getElementById('resultBandwidth');
+  var joinedThisPage = false;
+  var lastLiveKey = null;
+  var lastRejectionSignature = null;
+  var lastRouteSignature = null;
 
-  function pickRoundValue(record, names){
+  function pickLiveValue(record, names){
     if (!record || typeof record !== 'object') return null;
     for (var i = 0; i < names.length; i++) {
       var value = record[names[i]];
@@ -1351,39 +1549,239 @@ python3 bench.py</code></pre>
     return null;
   }
 
-  function roundText(value, fallback){
+  function liveText(value, fallback, max){
     if (typeof value === 'number' && isFinite(value)) return String(value);
-    if (typeof value === 'string' && value.length) return value.slice(0, 24);
+    if (typeof value === 'string' && value.length) return value.slice(0, max || 32);
     return fallback;
   }
 
-  function paintRoundVisual(record){
-    var generated = pickRoundValue(record, ['generated','attempts_generated','candidates_generated','attempts','candidate_count']);
-    var checked = pickRoundValue(record, ['checked','attempts_checked','candidates_checked']);
-    var survived = pickRoundValue(record, ['survived','survivors','survivor_count']);
-    var outcome = pickRoundValue(record, ['exit','status','outcome']);
-    roundGeneratedEl.textContent = roundText(generated, 'unknown');
-    roundCheckedEl.textContent = roundText(checked, roundText(generated, 'unknown'));
-    roundSurvivedEl.textContent = roundText(survived, 'unknown');
-    roundExitEl.textContent = roundText(outcome, 'reported');
+  function liveNumber(value, fallback){
+    return typeof value === 'number' && isFinite(value) && value >= 0
+      ? String(Math.round(value)) : fallback;
   }
 
-  function standbyRoundVisual(label){
+  function elapsedText(value){
+    if (typeof value !== 'number' || !isFinite(value) || value < 0) return '—';
+    if (value < 10000) return (value / 1000).toFixed(1) + ' s';
+    return Math.round(value / 1000) + ' s';
+  }
+
+  function clearElement(el){
+    while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  function standbyLive(label){
+    checkerGeneratedEl.textContent = 'waiting';
+    checkerGoodProbeEl.textContent = 'waiting';
+    checkerBadProbeEl.textContent = 'waiting';
+    checkerLockedEl.textContent = 'waiting';
     roundGeneratedEl.textContent = '—';
     roundCheckedEl.textContent = '—';
+    roundCulledEl.textContent = '—';
     roundSurvivedEl.textContent = '—';
+    roundElapsedEl.textContent = '—';
     roundExitEl.textContent = label;
   }
 
-  function paintRound(d){
-    if (!d || d.status === 'awaiting_rounds' || (d.round && d.round.status === 'standby')) {
-      standbyRoundVisual('standby');
-      liveEl.textContent = 'No round running yet. This fills in once the local runner starts.';
+  var rejectionOrder = [
+    'invalid_json','wrong_shape','bad_endpoints','unknown_node','repeated_node',
+    'offline_node','bad_hop','latency','bandwidth'
+  ];
+  var rejectionLabels = {
+    invalid_json:'invalid JSON', wrong_shape:'wrong shape', bad_endpoints:'wrong endpoints',
+    unknown_node:'unknown node', repeated_node:'repeated node', offline_node:'used offline C',
+    bad_hop:'nonexistent hop', latency:'over 9 ms', bandwidth:'under 3 Mbps'
+  };
+
+  function paintRejections(counts, hasRun){
+    var signature = hasRun ? JSON.stringify(counts || {}) : 'standby';
+    if (signature === lastRejectionSignature) return;
+    lastRejectionSignature = signature;
+    clearElement(rejectionListEl);
+    if (!hasRun) {
+      var empty = document.createElement('span');
+      empty.className = 'rejection-item';
+      empty.textContent = 'No rejected candidates yet.';
+      rejectionListEl.appendChild(empty);
       return;
     }
-    paintRoundVisual(d.round && typeof d.round === 'object' ? d.round : d);
+    rejectionOrder.forEach(function(key){
+      var item = document.createElement('span');
+      item.className = 'rejection-item';
+      var label = document.createElement('span');
+      label.textContent = rejectionLabels[key];
+      var count = document.createElement('strong');
+      count.textContent = liveNumber(counts && counts[key], '0');
+      item.appendChild(label);
+      item.appendChild(count);
+      rejectionListEl.appendChild(item);
+    });
+  }
+
+  function paintRoute(result){
+    var route = result && Array.isArray(result.route) ? result.route.slice(0, 7) : [];
+    var signature = JSON.stringify({
+      route:route,
+      latency_ms:result && result.latency_ms,
+      bandwidth_mbps:result && result.bandwidth_mbps
+    });
+    if (signature === lastRouteSignature) return;
+    lastRouteSignature = signature;
+    clearElement(resultRouteEl);
+    if (route.length < 2) {
+      var waiting = document.createElement('span');
+      waiting.className = 'route-result-node';
+      waiting.textContent = 'waiting for a survivor';
+      resultRouteEl.appendChild(waiting);
+      resultLatencyEl.textContent = '—';
+      resultBandwidthEl.textContent = '—';
+      return;
+    }
+    route.forEach(function(node, index){
+      if (index) {
+        var arrow = document.createElement('span');
+        arrow.className = 'route-result-arrow';
+        arrow.textContent = '→';
+        resultRouteEl.appendChild(arrow);
+      }
+      var tile = document.createElement('span');
+      tile.className = 'route-result-node';
+      tile.textContent = liveText(node, 'unknown', 20);
+      resultRouteEl.appendChild(tile);
+    });
+    resultLatencyEl.textContent = liveNumber(result.latency_ms, '—') + ' ms';
+    resultBandwidthEl.textContent = liveNumber(result.bandwidth_mbps, '—') + ' Mbps';
+  }
+
+  function paintLive(d){
+    if (!d || typeof d !== 'object') {
+      standbyLive('offline');
+      liveEl.textContent = 'Live endpoint returned no usable record.';
+      return;
+    }
+    var liveKey = String(d.version) + ':' + String(d.stale);
+    if (liveKey === lastLiveKey) return;
+    lastLiveKey = liveKey;
+    var run = d.run && typeof d.run === 'object' ? d.run : null;
+    var audience = d.audience && typeof d.audience === 'object' ? d.audience : {};
+    var baseAttempts = run ? pickLiveValue(run, ['base_attempts']) : null;
+    if (typeof baseAttempts !== 'number') baseAttempts = 0;
+    var audienceTarget = pickLiveValue(audience, ['target']);
+    var candidateTarget = run ? pickLiveValue(run, ['candidate_target','target']) : null;
+    var audienceJoined = pickLiveValue(audience, ['joined','count']);
+    if (run && run.status === 'collecting' && typeof audienceJoined === 'number') {
+      candidateTarget = Math.min(100, baseAttempts + audienceJoined);
+    }
+    if (typeof candidateTarget !== 'number') {
+      candidateTarget = baseAttempts + (typeof audienceTarget === 'number' ? audienceTarget : 0);
+    }
+    audienceJoinedEl.textContent = liveNumber(audienceJoined, '0');
+    candidateTargetEl.textContent = liveNumber(candidateTarget, '—');
+
+    if (!run) {
+      standbyLive(liveText(d.phase, 'standby', 24));
+      paintRejections(null, false);
+      paintRoute(null);
+    } else {
+      var checker = run.checker && typeof run.checker === 'object' ? run.checker : {};
+      var generated = pickLiveValue(run, ['generated','attempts_generated','candidates_generated']);
+      var checked = pickLiveValue(run, ['checked','attempts_checked','candidates_checked']);
+      var survived = pickLiveValue(run, ['survived','survivors','survivor_count']);
+      var culled = pickLiveValue(run, ['culled','rejected']);
+      if (typeof culled !== 'number' && typeof checked === 'number' && typeof survived === 'number') {
+        culled = Math.max(0, checked - survived);
+      }
+      var checkerExists = typeof checker.source_preview === 'string' && checker.source_preview.length > 0;
+      var checkerTerminal = run.status === 'collapse' || run.status === 'error';
+      checkerGeneratedEl.textContent = checkerExists || checker.locked
+        ? 'generated' : run.status === 'planning' ? 'writing…' : checkerTerminal ? 'not accepted' : 'waiting';
+      checkerGoodProbeEl.textContent = checker.known_good_passed === true
+        ? 'passed' : checkerTerminal ? 'not passed' : 'waiting';
+      checkerBadProbeEl.textContent = checker.known_bad_rejected === true
+        ? 'rejected' : checkerTerminal ? 'not rejected' : 'waiting';
+      checkerLockedEl.textContent = checker.locked === true
+        ? 'locked' : checkerTerminal ? 'not locked' : 'waiting';
+      roundGeneratedEl.textContent = liveNumber(generated, '0');
+      roundCheckedEl.textContent = liveNumber(checked, '0');
+      roundCulledEl.textContent = liveNumber(culled, '0');
+      roundSurvivedEl.textContent = liveNumber(survived, '0');
+      roundElapsedEl.textContent = elapsedText(run.elapsed_ms);
+      var status = liveText(run.status, liveText(d.phase, 'standby', 24), 24);
+      roundExitEl.textContent = d.stale ? 'stale · ' + status : status;
+      paintRejections(run.rejection_counts, true);
+      var result = run.result && typeof run.result === 'object' ? run.result : null;
+      if (!result && Array.isArray(run.route)) {
+        result = {route:run.route, latency_ms:run.latency_ms, bandwidth_mbps:run.bandwidth_mbps};
+      }
+      paintRoute(result);
+    }
+
+    var joinOpen = run ? pickLiveValue(run, ['join_open']) : pickLiveValue(d, ['join_open']);
+    if (!joinedThisPage) {
+      if (joinOpen === false) {
+        joinLiveEl.disabled = true;
+        joinLiveEl.textContent = 'Joins closed';
+      } else {
+        joinLiveEl.disabled = false;
+        joinLiveEl.textContent = 'Add one candidate';
+      }
+    }
+    var liveMessage = run && typeof run.message === 'string' ? run.message : d.message;
+    if (!joinedThisPage && typeof liveMessage === 'string' && liveMessage.length) {
+      joinMessageEl.textContent = liveMessage.slice(0, 160);
+    }
     liveEl.textContent = JSON.stringify(d, null, 2);
   }
+
+  function joinErrorMessage(code){
+    if (code === 'joins_closed') return 'The host has closed joins for this run.';
+    if (code === 'audience_full') return 'The audience candidate budget is full.';
+    if (code === 'join_rate_limited') return 'Too many joins at once. Try again in a moment.';
+    if (code === 'same_origin_required') return 'Refresh this page before joining.';
+    return 'Could not add a candidate. Please try again.';
+  }
+
+  function joinLive(){
+    if (joinedThisPage) return;
+    joinLiveEl.disabled = true;
+    joinLiveEl.textContent = 'Adding candidate…';
+    joinMessageEl.textContent = 'Sending one small request to the host queue.';
+    fetch('/api/live/join', {
+      method:'POST', cache:'no-store', credentials:'same-origin',
+      headers:{'Accept':'application/json'}
+    })
+      .then(function(response){
+        return response.json()
+          .catch(function(){ return {error:'request_failed'}; })
+          .then(function(body){ return {ok:response.ok, body:body}; });
+      })
+      .then(function(result){
+        if (!result.ok) throw result.body;
+        joinedThisPage = true;
+        joinLiveEl.disabled = true;
+        joinLiveEl.textContent = 'Candidate added';
+        joinMessageEl.textContent = result.body.deduped
+          ? 'This browser was already counted. Wilson’s Mac still does all inference.'
+          : 'Added. Wilson’s Mac will generate one extra candidate for your tap.';
+        if (result.body.audience) {
+          audienceJoinedEl.textContent = liveNumber(result.body.audience.joined, audienceJoinedEl.textContent);
+        }
+        pollLive();
+      })
+      .catch(function(error){
+        var code = error && typeof error.error === 'string' ? error.error : 'request_failed';
+        joinMessageEl.textContent = joinErrorMessage(code);
+        if (code === 'joins_closed' || code === 'audience_full') {
+          joinLiveEl.disabled = true;
+          joinLiveEl.textContent = 'Joins closed';
+        } else {
+          joinLiveEl.disabled = false;
+          joinLiveEl.textContent = 'Try again';
+        }
+      });
+  }
+
+  joinLiveEl.addEventListener('click', joinLive);
 
   var boardEl = document.getElementById('board');
   function paintBoard(d){
@@ -1439,18 +1837,23 @@ python3 bench.py</code></pre>
     boardEl.appendChild(note);
   }
 
-  function poll(){
-    fetch('/api/round', {cache:'no-store'})
+  function pollLive(){
+    fetch('/api/live', {cache:'no-store'})
       .then(function(r){ return r.json(); })
-      .then(paintRound)
-      .catch(function(){ standbyRoundVisual('offline'); liveEl.textContent = 'offline'; });
+      .then(paintLive)
+      .catch(function(){ lastLiveKey = null; roundExitEl.textContent = 'offline'; liveEl.textContent = 'Live endpoint unavailable.'; });
+  }
+
+  function pollBoard(){
     fetch('/api/bench', {cache:'no-store'})
       .then(function(r){ return r.json(); })
       .then(paintBoard)
       .catch(function(){});
   }
-  poll();
-  setInterval(poll, 5000);
+  pollLive();
+  pollBoard();
+  setInterval(pollLive, 2000);
+  setInterval(pollBoard, 5000);
 </script>
 </body>
 </html>`;

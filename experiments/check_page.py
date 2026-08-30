@@ -14,7 +14,7 @@ It fetches the deployed URL and asserts the served artifact is intact:
   - no stray backslashes survived into the served page
   - all nine explanatory sections retain an accessible, captioned visual
   - the elements the script reaches for actually exist
-  - /health, /api/results and /api/round all answer
+  - /health, /api/results, /api/round and the live-room API all answer
 
 Stdlib only.
 
@@ -34,13 +34,13 @@ UA = {"User-Agent": "plan-then-cull-check/1.0"}  # Cloudflare 1010s urllib's def
 
 EXPECTED_SECTION_VISUALS = [
     "openai-bars",
+    "live-round",
     "situation-constraint",
     "part-one-terminal",
     "measurements-cards",
     "distillation-pipeline",
     "qa-trust",
     "benchmark-flow",
-    "live-round",
     "glossary-map",
 ]
 
@@ -67,14 +67,52 @@ EXPECTED_FIGURE_LABELS = {
         "22.78%",
     ],
     "constraint-visual": ["five words", "begins with S", "glow", "FAIL"],
-    "distillation-visual": ["Part one", "Part two", "60 attempts", "check()", "survivors", "Train"],
+    "distillation-visual": ["Part one", "Part two", "30 attempts", "check()", "survivors", "Train"],
     "trust-visual": ["Big model", "Probe gate", "known-good", "known-bad", "Tiny model", "CPython"],
     "benchmark-visual": ["Ollama", "bench.py", "Worker", "Public board", "Sends", "Never sends"],
-    "round-visual": ["Pull", "Check", "Keep", "Exit", "success", "budget", "collapse"],
+    "round-visual": [
+        "Audience",
+        "Wilson's Mac",
+        "BASE",
+        "ROVER",
+        "C offline",
+        "latency",
+        "bandwidth",
+        "Pull",
+        "Check",
+        "Cull",
+        "Keep",
+        "Exit",
+        "success",
+        "budget",
+        "collapse",
+    ],
     "glossary-visual": ["Attempt", "Width", "Cull", "Parameters", "Temperature", "CPython"],
 }
 
-LIVE_METRIC_IDS = ["roundGenerated", "roundChecked", "roundSurvived", "roundExit"]
+LIVE_METRIC_IDS = [
+    "roundGenerated",
+    "roundChecked",
+    "roundCulled",
+    "roundSurvived",
+    "roundElapsed",
+    "roundExit",
+]
+
+LIVE_DEMO_IDS = [
+    "joinLive",
+    "joinMessage",
+    "audienceJoined",
+    "candidateTarget",
+    "checkerGenerated",
+    "checkerGoodProbe",
+    "checkerBadProbe",
+    "checkerLocked",
+    "rejectionList",
+    "resultRoute",
+    "resultLatency",
+    "resultBandwidth",
+]
 
 
 class PageStructureParser(HTMLParser):
@@ -172,6 +210,7 @@ def main():
     check("page returns 200", status == 200, str(status))
     check("page is html", "text/html" in ctype, ctype)
     check("page is non-trivial", len(html) > 2000, f"{len(html)} bytes")
+    html_flat = " ".join(html.split())
     check("hero is Distillation", "<h1>Distillation</h1>" in html)
     check("hero defines pull and cull", "Part one: pull and cull." in html)
 
@@ -198,7 +237,7 @@ def main():
     )
     check(
         "terminal shows the cull",
-        "[CPython]" in html and "56 deleted" in html and "4 survived" in html,
+        "[CPython]" in html and "26 deleted" in html and "4 survived" in html,
     )
     check(
         "terminal shows every loop exit",
@@ -289,6 +328,28 @@ def main():
             f"getElementById('{metric_id}')" in html,
         )
 
+    for element_id in LIVE_DEMO_IDS:
+        check(
+            f"live demo contains {element_id}",
+            id_counts[element_id] == 1 and element_id in round_ids,
+        )
+        check(
+            f"script reaches {element_id}",
+            f"getElementById('{element_id}')" in html,
+        )
+
+    check(
+        "live join sends no request body",
+        "fetch('/api/live/join'" in html and "body:" not in html[html.find("fetch('/api/live/join'"):html.find("fetch('/api/live/join'") + 300],
+    )
+    check("live page polls the shared room", "fetch('/api/live'" in html)
+    check("lunar task names its failed relay", "Node C is offline" in html)
+    check(
+        "lunar task is scoped as a toy demo",
+        "not NASA work" in html_flat and "safety-certified software" in html_flat,
+    )
+    check("audience compute claim is honest", "does not run or download the model" in html_flat)
+
     # The trap: a backslash surviving into the served page means the template
     # literal mangled something. There should be exactly zero.
     n_backslash = html.count("\\")
@@ -299,7 +360,12 @@ def main():
 
     # Elements the inline script depends on. If the id is renamed in the CSS or
     # markup but not the script, the page renders and silently does nothing.
-    for needle in ['id="live"', "getElementById('live')", "/api/round"]:
+    for needle in [
+        'id="live"',
+        "getElementById('live')",
+        "/api/live",
+        "/api/live/join",
+    ]:
         check(f"page references {needle}", needle in html)
 
     # --- the API surface ---
@@ -318,6 +384,19 @@ def main():
     except Exception as e:
         check("/api/round answers", False, str(e))
 
+    try:
+        status, ctype, data = get(base + "/api/live", expect_json=True)
+        check("/api/live returns 200 json", status == 200 and "json" in ctype)
+        check(
+            "/api/live has public room state",
+            isinstance(data, dict)
+            and data.get("session_id") == "sundai-138"
+            and isinstance(data.get("audience"), dict)
+            and isinstance(data.get("run"), dict),
+        )
+    except Exception as e:
+        check("/api/live answers", False, str(e))
+
     # Ingest must reject an unauthenticated POST. A demo endpoint that accepts
     # anything is worse than no endpoint.
     try:
@@ -330,6 +409,30 @@ def main():
         check("unauthenticated POST is rejected", e.code == 401, f"got {e.code}")
     except Exception as e:
         check("unauthenticated POST is rejected", False, str(e))
+
+    try:
+        req = urllib.request.Request(
+            base + "/api/live/run",
+            data=b"{}",
+            headers={**UA, "Content-Type": "application/json"},
+        )
+        urllib.request.urlopen(req, timeout=30)
+        check("unauthenticated live runner POST is rejected", False, "it was accepted")
+    except urllib.error.HTTPError as e:
+        check("unauthenticated live runner POST is rejected", e.code == 401, f"got {e.code}")
+    except Exception as e:
+        check("unauthenticated live runner POST is rejected", False, str(e))
+
+    # A join without the page's same-origin browser signal must fail before it
+    # can mutate participant state.
+    try:
+        req = urllib.request.Request(base + "/api/live/join", data=b"", headers=UA)
+        urllib.request.urlopen(req, timeout=30)
+        check("cross-origin-style live join is rejected", False, "it was accepted")
+    except urllib.error.HTTPError as e:
+        check("cross-origin-style live join is rejected", e.code == 403, f"got {e.code}")
+    except Exception as e:
+        check("cross-origin-style live join is rejected", False, str(e))
 
     print()
     if failures:

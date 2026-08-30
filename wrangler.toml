@@ -8,6 +8,16 @@ compatibility_date = "2026-08-29"
 binding = "ROUNDS"
 id = "dcef48ccf9d048ec9b9304e8e6713ae9"
 
+# Strongly consistent state for the live Sundai room. One named instance,
+# "sundai-138", serializes public joins and authenticated runner updates.
+[[durable_objects.bindings]]
+name = "LIVE_ROOM"
+class_name = "LiveRoom"
+
+[exports.LiveRoom]
+type = "durable-object"
+storage = "sqlite"
+
 # INGEST_TOKEN is deliberately NOT declared here.
 #
 # It must be a wrangler SECRET:
