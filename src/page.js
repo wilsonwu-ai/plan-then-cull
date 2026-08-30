@@ -85,6 +85,52 @@ export const PAGE = `<!doctype html>
   figure svg{width:100%; height:auto; display:block}
   figcaption{font-size:.85rem; color:var(--soft); margin-top:.75rem; text-align:center}
 
+  .terminal-grid{
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem;
+    margin:1.5rem 0 2.5rem;
+  }
+  .terminal-figure{margin:0; min-width:0}
+  .terminal-window{
+    overflow:hidden; border:1px solid #334155; border-radius:8px;
+    background:#0f172a; box-shadow:0 12px 30px rgba(15,23,42,0.18);
+  }
+  .terminal-bar{
+    min-height:2.35rem; padding:.55rem .7rem; display:flex; align-items:center; gap:.65rem;
+    background:#182235; border-bottom:1px solid #334155;
+    font-family:'Geist Mono',ui-monospace,Menlo,monospace;
+  }
+  .terminal-lights{display:flex; gap:.3rem; flex:0 0 auto}
+  .terminal-light{width:.55rem; height:.55rem; border-radius:50%; display:block}
+  .terminal-light.red{background:#fb7185}
+  .terminal-light.amber{background:#fbbf24}
+  .terminal-light.green{background:#4ade80}
+  .terminal-name{
+    color:#cbd5e1; font-size:.66rem; letter-spacing:.04em; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  .terminal-badge{
+    margin-left:auto; color:#94a3b8; border:1px solid #475569; border-radius:999px;
+    padding:.08rem .42rem; font-size:.55rem; letter-spacing:.08em; text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .terminal-body{
+    min-height:25rem; margin:0; padding:1rem; overflow-x:auto; color:#dbe4f0;
+    font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:.75rem; line-height:1.55; white-space:pre-wrap; word-break:normal;
+  }
+  .terminal-body code{
+    padding:0; border:0; border-radius:0; background:none; color:inherit;
+    font:inherit;
+  }
+  .term-prompt{color:#86efac}
+  .term-model{color:#fdba74}
+  .term-key{color:#93c5fd}
+  .term-pass{color:#86efac; font-weight:600}
+  .term-fail{color:#fda4af; font-weight:600}
+  .term-answer{color:#fef08a; font-weight:600}
+  .term-dim{color:#94a3b8}
+  .terminal-figure figcaption{padding:0 .35rem; line-height:1.45}
+
   .numbers{display:grid; gap:1rem; margin:1.5rem 0}
   .num{
     background:var(--card); border:1px solid var(--rule); border-radius:6px;
@@ -114,6 +160,10 @@ export const PAGE = `<!doctype html>
          font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.72rem; color:var(--soft)}
   a{color:var(--accent)}
   .src{font-size:.82rem; color:var(--soft)}
+  @media (max-width:720px){
+    .terminal-grid{grid-template-columns:1fr}
+    .terminal-body{min-height:0; font-size:.75rem}
+  }
   @media (max-width:600px){
     body{font-size:16px; padding:1.5rem 1.1rem 4rem}
     h1{font-size:2.2rem} h2{font-size:1.6rem}
@@ -228,6 +278,82 @@ export const PAGE = `<!doctype html>
     <p>If one attempt from a small model is unreliable, sixty attempts are sixty chances that
     <em>at least one</em> is correct. That is only useful if you can tell which one. So the
     real problem is not generation. It is <b>checking</b>.</p>
+
+    <h3 id="terminal-run">What one run looks like</h3>
+    <p><b>Illustrated run, not recorded output.</b> The first terminal asks the larger model
+    for one checker. The second asks the tiny model for many answers and lets CPython remove
+    the failures. The live runner supplies its own answers, survivor count, and timing.</p>
+
+    <div class="terminal-grid" role="group" aria-label="Illustrative terminal transcript of one pull-and-cull run">
+      <figure class="terminal-figure" id="terminal-checker">
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="terminal-lights" aria-hidden="true">
+              <span class="terminal-light red"></span>
+              <span class="terminal-light amber"></span>
+              <span class="terminal-light green"></span>
+            </span>
+            <span class="terminal-name">planner &middot; qwen3:8b</span>
+            <span class="terminal-badge">illustrative</span>
+          </div>
+          <pre class="terminal-body"><code><span class="term-prompt">$ ollama run qwen3:8b</span>
+
+<span class="term-model">&gt;&gt;&gt; Write check(answer) for:</span>
+    exactly five words;
+    every word starts with S.
+
+<span class="term-key">def check(answer):</span>
+    words = answer.split()
+    return len(words) == 5 and all(
+        word[:1].lower() == "s"
+        for word in words
+    )
+
+<span class="term-key">TEST THE TEST</span>
+<span class="term-pass">[OK]</span> known-good &rarr; True &rarr; accepted
+     <span class="term-dim">"Silent silver stars shine softly"</span>
+<span class="term-pass">[OK]</span> known-bad  &rarr; False &rarr; rejected
+     <span class="term-dim">"Silent silver stars glow softly"</span>
+
+<span class="term-key">checker locked</span>  both probes behaved correctly</code></pre>
+        </div>
+        <figcaption>The expensive model writes one auditable Python rule, then stops.</figcaption>
+      </figure>
+
+      <figure class="terminal-figure" id="terminal-cull">
+        <div class="terminal-window">
+          <div class="terminal-bar">
+            <span class="terminal-lights" aria-hidden="true">
+              <span class="terminal-light red"></span>
+              <span class="terminal-light amber"></span>
+              <span class="terminal-light green"></span>
+            </span>
+            <span class="terminal-name">runner &middot; qwen3:0.6b + CPython</span>
+            <span class="terminal-badge">illustrative</span>
+          </div>
+          <pre class="terminal-body"><code><span class="term-model">[qwen3:0.6b]</span> pull 60 attempts
+
+<span class="term-dim">[01]</span> Small silver stars glow softly
+     <span class="term-fail">FAIL</span>
+<span class="term-dim">[02]</span> Silent silver stars shine softly
+     <span class="term-pass">PASS</span>
+<span class="term-dim">[03]</span> Seven bright stars shine slowly
+     <span class="term-fail">FAIL</span>
+<span class="term-dim"> ... 56 more attempts ...</span>
+<span class="term-dim">[60]</span> Soft summer skies stay sunny
+     <span class="term-pass">PASS</span>
+
+<span class="term-key">[CPython]</span> checked 60 of 60
+<span class="term-fail">[cull]</span>     56 deleted
+<span class="term-pass">[keep]</span>      4 survived
+
+<span class="term-answer">answer  Silent silver stars shine softly</span>
+<span class="term-pass">exit    SUCCESS &middot; round 1</span>
+<span class="term-dim">other   budget &middot; collapse fails closed</span></code></pre>
+        </div>
+        <figcaption>The cheap model supplies the attempts; CPython decides what survives.</figcaption>
+      </figure>
+    </div>
 
     <p>Here is the whole system, in three steps.</p>
 

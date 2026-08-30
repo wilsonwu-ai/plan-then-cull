@@ -71,6 +71,28 @@ def main():
         f"OpenAI at {openai_at}, problem at {problem_at}",
     )
 
+    terminal_count = html.count('class="terminal-window"')
+    check("two terminal diagrams are present", terminal_count == 2, f"found {terminal_count}")
+    check("terminal transcript is labeled illustrative", "Illustrated run, not recorded output." in html)
+    check(
+        "terminal group is labeled",
+        'class="terminal-grid" role="group" aria-label="Illustrative terminal transcript' in html,
+    )
+    check(
+        "terminal validates the checker",
+        "known-good &rarr; True" in html
+        and "known-bad  &rarr; False" in html
+        and "checker locked" in html,
+    )
+    check(
+        "terminal shows the cull",
+        "[CPython]" in html and "56 deleted" in html and "4 survived" in html,
+    )
+    check(
+        "terminal shows every loop exit",
+        "SUCCESS" in html and "budget" in html and "collapse fails closed" in html,
+    )
+
     # The trap: a backslash surviving into the served page means the template
     # literal mangled something. There should be exactly zero.
     n_backslash = html.count("\\")
