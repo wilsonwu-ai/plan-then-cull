@@ -51,7 +51,7 @@ Then open the dashboard for the room and start the live round:
 python3 demo/live_demo.py
 ```
 
-The default join window is 20 seconds. With both models warm, allow roughly **25–35 seconds after that window closes**, or about **45–55 seconds from command to result**. In one 30-candidate rehearsal, 8 routes survived and the complete plan/check/sample/cull run took **27.8 seconds** after a zero-second join window; candidate sampling itself took **6.7 seconds**. Local model timings vary substantially between runs, so treat those as stage-planning ranges, not a latency guarantee. A cold model load can add roughly 15 seconds, which is why prewarming matters.
+The default join window is 20 seconds. With both models warm, allow roughly **25–40 seconds after that window closes**, or about **45–60 seconds from command to result**. In one 30-candidate rehearsal, 8 routes survived and the complete plan/check/sample/cull run took **27.8 seconds** after a zero-second join window; candidate sampling itself took **6.7 seconds**. A later public rehearsal took **37.8 seconds** with the same 8-survivor result. Local model timings vary substantially between runs, so treat those as stage-planning ranges, not a latency guarantee. A cold model load can add roughly 15 seconds, which is why prewarming matters.
 
 For a rehearsal that neither opens the audience join window nor updates the public dashboard:
 
