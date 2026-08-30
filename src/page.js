@@ -24,14 +24,22 @@ export const PAGE = `<!doctype html>
 <title>Distillation &mdash; pull and cull</title>
 <style>
   :root{
-    --paper:#f5f5f5; --ink:#2d3142; --muted:#4f5d75; --soft:#7a8399;
+    --paper:#f5f5f5; --ink:#2d3142; --muted:#4f5d75; --soft:#5f687d;
     --accent:#eb6c36; --accent-tint:rgba(235,108,54,0.10);
+    --accent-strong:#b5481d;
+    --good:#24734b; --good-tint:rgba(36,115,75,0.10);
+    --bad:#a93f4e; --bad-tint:rgba(169,63,78,0.10);
+    --info:#386a9b; --info-tint:rgba(56,106,155,0.10);
     --rule:rgba(45,49,66,0.12); --card:#ffffff; --wash:rgba(45,49,66,0.04);
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --paper:#2d3142; --ink:#f5f5f5; --muted:#bfc0c0; --soft:#8e98ac;
+      --paper:#2d3142; --ink:#f5f5f5; --muted:#bfc0c0; --soft:#aab4c7;
       --accent:#f08a59; --accent-tint:rgba(240,138,89,0.14);
+      --accent-strong:#f0a179;
+      --good:#86efac; --good-tint:rgba(134,239,172,0.10);
+      --bad:#fda4af; --bad-tint:rgba(253,164,175,0.10);
+      --info:#93c5fd; --info-tint:rgba(147,197,253,0.10);
       --rule:rgba(245,245,245,0.14); --card:rgba(245,245,245,0.04); --wash:rgba(245,245,245,0.05);
     }
   }
@@ -50,13 +58,13 @@ export const PAGE = `<!doctype html>
   h1{font-family:'Instrument Serif',Georgia,serif; font-weight:400; font-size:3rem;
      margin:0 0 1rem; line-height:1.1; letter-spacing:-0.01em}
   .lede{font-size:1.2rem; color:var(--ink); margin:0 0 .75rem; line-height:1.5}
-  .lede b{color:var(--accent); font-weight:600}
+  .lede b{color:var(--accent-strong); font-weight:600}
   .sub{color:var(--muted); margin:0 0 3rem; font-size:1rem}
 
   section{margin:0 0 3.5rem}
   .step-label{
     font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.68rem;
-    letter-spacing:.18em; text-transform:uppercase; color:var(--accent);
+    letter-spacing:.18em; text-transform:uppercase; color:var(--accent-strong);
     margin:0 0 .4rem; font-weight:600;
   }
   h2{font-family:'Instrument Serif',Georgia,serif; font-weight:400; font-size:2rem;
@@ -131,6 +139,123 @@ export const PAGE = `<!doctype html>
   .term-dim{color:#94a3b8}
   .terminal-figure figcaption{padding:0 .35rem; line-height:1.45}
 
+  .viz{
+    margin:1.5rem 0 2rem; padding:1.2rem; background:var(--card);
+    border:1px solid var(--rule); border-radius:8px;
+  }
+  .viz-kicker{
+    margin:0 0 .3rem; color:var(--accent-strong); font-family:'Geist Mono',ui-monospace,Menlo,monospace;
+    font-size:.62rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  }
+  .viz-title{margin:0 0 1.15rem; color:var(--ink); font-size:1rem; font-weight:600; line-height:1.4}
+  .viz figcaption{
+    margin:1rem 0 0; padding-top:.8rem; border-top:1px solid var(--rule);
+    color:var(--soft); text-align:left; line-height:1.45;
+  }
+  .viz-flow{display:grid; gap:.55rem; align-items:stretch}
+  .viz-flow.flow-3{grid-template-columns:1fr auto 1fr auto 1fr}
+  .viz-flow.flow-4{grid-template-columns:1fr auto 1fr auto 1fr auto 1fr}
+  .viz-node{
+    min-width:0; padding:.85rem; display:flex; flex-direction:column; justify-content:center;
+    background:var(--wash); border:1px solid var(--rule); border-radius:6px;
+  }
+  .viz-node[data-tone="accent"]{background:var(--accent-tint); border-color:var(--accent)}
+  .viz-node[data-tone="good"]{background:var(--good-tint); border-color:var(--good)}
+  .viz-node[data-tone="bad"]{background:var(--bad-tint); border-color:var(--bad)}
+  .viz-node[data-tone="info"]{background:var(--info-tint); border-color:var(--info)}
+  .node-label{
+    color:var(--soft); font-family:'Geist Mono',ui-monospace,Menlo,monospace;
+    font-size:.58rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .viz-node[data-tone="accent"] .node-label{color:var(--accent-strong)}
+  .viz-node[data-tone="good"] .node-label{color:var(--good)}
+  .viz-node[data-tone="bad"] .node-label{color:var(--bad)}
+  .viz-node[data-tone="info"] .node-label{color:var(--info)}
+  .node-value{margin:.25rem 0 .15rem; color:var(--ink); font-size:1.05rem; font-weight:700; line-height:1.25}
+  .node-copy{color:var(--muted); font-size:.76rem; line-height:1.4}
+  .viz-arrow{
+    align-self:center; color:var(--soft); font-family:'Geist Mono',ui-monospace,Menlo,monospace;
+    font-size:1.1rem; font-weight:700;
+  }
+  .viz-chip{
+    display:inline-flex; align-items:center; gap:.35rem; width:max-content; max-width:100%;
+    padding:.28rem .55rem; border:1px solid var(--rule); border-radius:999px;
+    color:var(--muted); background:var(--wash); font-family:'Geist Mono',ui-monospace,Menlo,monospace;
+    font-size:.65rem; line-height:1.3;
+  }
+  .viz-chip.good{color:var(--good); border-color:var(--good); background:var(--good-tint)}
+  .viz-chip.bad{color:var(--bad); border-color:var(--bad); background:var(--bad-tint)}
+  .viz-chip.info{color:var(--info); border-color:var(--info); background:var(--info-tint)}
+
+  .viz-bars{display:grid; gap:.85rem}
+  .viz-bar-row{display:grid; grid-template-columns:minmax(8rem,1fr) minmax(10rem,1.7fr) 3.5rem; gap:.75rem; align-items:center}
+  .viz-bar-label{color:var(--ink); font-size:.82rem; line-height:1.3}
+  .viz-bar-label small{display:block; color:var(--soft); font-size:.68rem; margin-top:.15rem}
+  .viz-track{height:1.05rem; overflow:hidden; background:var(--wash); border:1px solid var(--rule); border-radius:999px}
+  .viz-fill{display:block; height:100%; border-radius:999px; background:var(--soft)}
+  .viz-fill.one{width:37.7%}
+  .viz-fill.self{width:44.5%; background:var(--info)}
+  .viz-fill.execute{width:77.5%; background:var(--accent)}
+  .viz-bar-value{color:var(--ink); font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.82rem; font-weight:700; text-align:right}
+  .viz-bar-row.focal .viz-bar-label,.viz-bar-row.focal .viz-bar-value{color:var(--accent-strong); font-weight:700}
+  .viz-axis{margin:.25rem 0 0; display:grid; grid-template-columns:minmax(8rem,1fr) minmax(10rem,1.7fr) 3.5rem; gap:.75rem; color:var(--soft); font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.58rem}
+  .viz-axis-scale{grid-column:2; display:flex; justify-content:space-between}
+  .viz-evidence{margin-top:1rem; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center}
+
+  .constraint-rule{
+    padding:.8rem 1rem; display:flex; gap:.8rem; align-items:center; justify-content:space-between;
+    background:var(--info-tint); border:1px solid var(--info); border-radius:6px;
+  }
+  .constraint-rule span{color:var(--info); font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.62rem; font-weight:700; letter-spacing:.1em}
+  .constraint-rule strong{font-size:.9rem; text-align:right}
+  .word-row{margin:1rem 0; display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center}
+  .word-token{
+    min-width:5.3rem; padding:.55rem .65rem; display:grid; grid-template-columns:auto 1fr; gap:.45rem; align-items:center;
+    color:var(--good); background:var(--good-tint); border:1px solid var(--good); border-radius:6px;
+  }
+  .word-token.bad{color:var(--bad); background:var(--bad-tint); border-color:var(--bad)}
+  .word-letter{font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:1rem; font-weight:800}
+  .word-text{color:var(--ink); font-size:.78rem}
+  .constraint-verdict{display:flex; flex-wrap:wrap; gap:.55rem; align-items:center; justify-content:center}
+  .constraint-not-equal{color:var(--soft); font-size:1.15rem; font-weight:700}
+
+  .pipeline-stages{margin-bottom:.65rem; display:grid; grid-template-columns:3fr 1fr; gap:.55rem}
+  .stage-band{
+    padding:.35rem .55rem; border-radius:4px; color:var(--muted); background:var(--wash);
+    font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.58rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; text-align:center;
+  }
+  .stage-band.next{color:var(--accent-strong); background:var(--accent-tint)}
+
+  .trust-list{display:grid; gap:0}
+  .trust-row{display:grid; grid-template-columns:7.5rem 1fr 1fr; gap:.65rem; padding:.75rem 0; border-bottom:1px solid var(--rule); align-items:stretch}
+  .trust-row:last-child{border-bottom:0}
+  .trust-who{display:flex; align-items:center; color:var(--ink); font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.68rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase}
+  .trust-do,.trust-limit{padding:.65rem .7rem; border-radius:5px; font-size:.76rem; line-height:1.4}
+  .trust-do{color:var(--good); background:var(--good-tint); border:1px solid var(--good)}
+  .trust-limit{color:var(--bad); background:var(--bad-tint); border:1px solid var(--bad)}
+  .trust-do b,.trust-limit b{display:block; margin-bottom:.12rem; font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.55rem; letter-spacing:.08em; text-transform:uppercase}
+
+  .privacy-strip{margin-top:.8rem; display:grid; grid-template-columns:1fr 1fr; gap:.65rem}
+  .privacy-box{padding:.7rem .8rem; border:1px solid var(--rule); border-radius:5px; background:var(--wash); color:var(--muted); font-size:.75rem; line-height:1.45}
+  .privacy-box b{display:block; margin-bottom:.2rem; color:var(--ink); font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.58rem; letter-spacing:.08em; text-transform:uppercase}
+  .privacy-box.never{background:var(--good-tint); border-color:var(--good)}
+  .privacy-box.never b{color:var(--good)}
+
+  .legend-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.65rem}
+  .legend-item{min-width:0; padding:.75rem; background:var(--wash); border:1px solid var(--rule); border-radius:6px}
+  .legend-icon{
+    min-height:3.2rem; margin-bottom:.55rem; display:flex; flex-wrap:wrap; gap:.3rem; align-items:center; justify-content:center;
+    color:var(--info); font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.7rem; font-weight:700;
+  }
+  .legend-item strong{display:block; color:var(--ink); font-size:.78rem; margin-bottom:.12rem}
+  .legend-item p{margin:0; color:var(--muted); font-size:.7rem; line-height:1.35}
+  .mini-tile{width:1.35rem; height:1.65rem; display:grid; place-items:center; border:1px solid var(--info); border-radius:3px; background:var(--info-tint)}
+  .mini-tile.fail{color:var(--bad); border-color:var(--bad); background:var(--bad-tint); text-decoration:line-through}
+  .mini-tile.keep{color:var(--good); border-color:var(--good); background:var(--good-tint)}
+  .model-block{display:grid; place-items:center; border:1px solid var(--info); background:var(--info-tint); border-radius:4px}
+  .model-block.small{width:2.5rem; height:2rem}
+  .model-block.large{width:3.8rem; height:3rem}
+
   .numbers{display:grid; gap:1rem; margin:1.5rem 0}
   .num{
     background:var(--card); border:1px solid var(--rule); border-radius:6px;
@@ -147,7 +272,7 @@ export const PAGE = `<!doctype html>
   th{font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.65rem;
      letter-spacing:.14em; text-transform:uppercase; color:var(--soft); font-weight:500}
   td.n{font-family:'Geist Mono',ui-monospace,Menlo,monospace; text-align:right}
-  tr.focal td{color:var(--accent); font-weight:600}
+  tr.focal td{color:var(--accent-strong); font-weight:600}
 
   .live{
     background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:1.25rem;
@@ -158,17 +283,35 @@ export const PAGE = `<!doctype html>
   .glossary dd{margin:.2rem 0 0; color:var(--muted)}
   footer{margin-top:4rem; padding-top:1.25rem; border-top:1px solid var(--rule);
          font-family:'Geist Mono',ui-monospace,Menlo,monospace; font-size:.72rem; color:var(--soft)}
-  a{color:var(--accent)}
+  a{color:var(--accent-strong)}
   .src{font-size:.82rem; color:var(--soft)}
   @media (max-width:720px){
     .terminal-grid{grid-template-columns:1fr}
     .terminal-body{min-height:0; font-size:.75rem}
+    .viz-flow.flow-3,.viz-flow.flow-4{grid-template-columns:1fr}
+    .viz-arrow{justify-self:center; transform:rotate(90deg)}
+    .pipeline-stages{grid-template-columns:1fr}
+    .trust-row{grid-template-columns:1fr}
+    .trust-who{padding-top:.2rem}
+    .legend-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   }
   @media (max-width:600px){
     body{font-size:16px; padding:1.5rem 1.1rem 4rem}
     h1{font-size:2.2rem} h2{font-size:1.6rem}
     .num{grid-template-columns:1fr; gap:.5rem}
     .num .big{font-size:2rem}
+    .viz{padding:1rem}
+    .viz-bar-row{grid-template-columns:1fr auto; gap:.35rem .65rem}
+    .viz-track{grid-column:1 / -1; grid-row:2}
+    .viz-bar-value{grid-column:2; grid-row:1}
+    .viz-axis{grid-template-columns:1fr}
+    .viz-axis-scale{grid-column:1}
+    .constraint-rule{align-items:flex-start; flex-direction:column}
+    .constraint-rule strong{text-align:left}
+    .privacy-strip{grid-template-columns:1fr}
+    table{display:block; max-width:100%; overflow-x:auto}
+    .wide-diagram{overflow-x:auto; padding-bottom:.25rem}
+    .wide-diagram svg{min-width:520px}
   }
 </style>
 </head>
@@ -183,7 +326,7 @@ export const PAGE = `<!doctype html>
   trained yet; the survivors can later become mechanically checked training examples.</p>
 
   <!-- =========================== OPENAI PROOF =========================== -->
-  <section>
+  <section data-visual="openai-bars">
     <p class="step-label">Start here &mdash; OpenAI Codex</p>
     <h2>With 100 tries, Codex solved 77.5% of problems. With one try, 37.7%.</h2>
 
@@ -194,19 +337,41 @@ export const PAGE = `<!doctype html>
     <p>They gave Codex 164 programming problems and let it write <b>100 attempts</b> at each.
     Then they asked three different questions about the same pile of attempts.</p>
 
-    <table>
-      <thead><tr><th>How you pick an answer</th><th class="n">Problems solved</th></tr></thead>
-      <tbody>
-        <tr><td>Take one attempt and go with it</td><td class="n">37.7%</td></tr>
-        <tr><td>Let the model pick its own favourite of the 100</td><td class="n">44.5%</td></tr>
-        <tr class="focal"><td>Run the code and keep whichever attempt works</td><td class="n">77.5%</td></tr>
-      </tbody>
-    </table>
+    <figure class="viz" id="openai-visual" aria-labelledby="openai-viz-title openai-viz-desc">
+      <p class="viz-kicker">Same 164 problems &middot; three ways to choose</p>
+      <div class="viz-title" id="openai-viz-title">The answers were in the pile. Selection was the bottleneck.</div>
+      <div class="viz-bars">
+        <div class="viz-bar-row">
+          <div class="viz-bar-label">Take one try<small>No search</small></div>
+          <div class="viz-track"><span class="viz-fill one"></span></div>
+          <div class="viz-bar-value">37.7%</div>
+        </div>
+        <div class="viz-bar-row">
+          <div class="viz-bar-label">Let Codex self-pick<small>100 tries &middot; model confidence</small></div>
+          <div class="viz-track"><span class="viz-fill self"></span></div>
+          <div class="viz-bar-value">44.5%</div>
+        </div>
+        <div class="viz-bar-row focal">
+          <div class="viz-bar-label">Execute the tests<small>100 tries &middot; oracle ceiling</small></div>
+          <div class="viz-track"><span class="viz-fill execute"></span></div>
+          <div class="viz-bar-value">77.5%</div>
+        </div>
+      </div>
+      <div class="viz-axis"><span class="viz-axis-scale"><span>0% solved</span><span>100%</span></span></div>
+      <div class="viz-evidence">
+        <span class="viz-chip info">APPS &middot; 1,000 attempts</span>
+        <span class="viz-chip">filter visible examples &middot; score hidden tests</span>
+        <span class="viz-chip">4.14% &rarr; 22.78% &middot; 5.5x</span>
+      </div>
+      <figcaption id="openai-viz-desc">All bars share a 0&ndash;100 scale. The 77.5% bar is an
+      oracle ceiling because it uses evaluation tests; the separate APPS result uses only
+      visible example tests while the real grading tests stay hidden.</figcaption>
+    </figure>
 
     <div class="pull">The correct answer was already sitting in the pile <b>77.5%</b> of the
     time. The model could only find it <b>44.5%</b> of the time.</div>
 
-    <p>The middle row is the important one. It is the model grading itself &mdash; picking the
+    <p>The middle bar is the important one. It is the model grading itself &mdash; picking the
     attempt it felt most confident about. Of the 39.8 points available between "one attempt"
     and "run the code," the model's own judgment recovered <b>6.8</b>. Executing the code
     recovered <b>all of them</b>.</p>
@@ -246,7 +411,7 @@ export const PAGE = `<!doctype html>
   </section>
 
   <!-- ============================ SITUATION ============================ -->
-  <section>
+  <section data-visual="situation-constraint">
     <p class="step-label">Why this matters &mdash; the problem</p>
     <h2>Small models are cheap, fast, and wrong a lot</h2>
 
@@ -257,6 +422,29 @@ export const PAGE = `<!doctype html>
     <p>Take a task with a hard rule attached &mdash; write a sentence where every word starts
     with the letter S, or compute an answer that has to be exactly right. A small model will
     produce something fluent that quietly breaks the rule. It does not notice.</p>
+
+    <figure class="viz" id="constraint-visual" aria-labelledby="constraint-viz-title constraint-viz-desc">
+      <p class="viz-kicker">One quiet failure</p>
+      <div class="viz-title" id="constraint-viz-title">It sounds right. One letter makes it fail.</div>
+      <div class="constraint-rule">
+        <span>THE RULE</span>
+        <strong>Exactly five words &middot; every word begins with S</strong>
+      </div>
+      <div class="word-row" aria-label="Candidate sentence with four passing words and one failing word">
+        <div class="word-token"><span class="word-letter">S</span><span class="word-text">Small</span></div>
+        <div class="word-token"><span class="word-letter">S</span><span class="word-text">silver</span></div>
+        <div class="word-token"><span class="word-letter">S</span><span class="word-text">stars</span></div>
+        <div class="word-token bad"><span class="word-letter">G</span><span class="word-text">glow &times;</span></div>
+        <div class="word-token"><span class="word-letter">S</span><span class="word-text">softly</span></div>
+      </div>
+      <div class="constraint-verdict">
+        <span class="viz-chip good">Fluent sentence &check;</span>
+        <span class="constraint-not-equal">&ne;</span>
+        <span class="viz-chip bad">Rule-compliant sentence &times; &middot; FAIL</span>
+      </div>
+      <figcaption id="constraint-viz-desc">The failure is word four: <em>glow</em> begins with
+      G. Fluency can hide a broken rule; an executable checker cannot.</figcaption>
+    </figure>
 
     <p>For the last several years the industry's answer to this has been the same: use a
     bigger model. That works. It also costs more every single time you ask, needs a
@@ -271,7 +459,7 @@ export const PAGE = `<!doctype html>
   </section>
 
   <!-- ========================= TASK &amp; ACTION ========================= -->
-  <section>
+  <section data-visual="part-one-terminal">
     <p class="step-label">Part one &mdash; pull and cull</p>
     <h2>Stop asking the model to be right. Ask it many times, and check.</h2>
 
@@ -357,7 +545,7 @@ export const PAGE = `<!doctype html>
 
     <p>Here is the whole system, in three steps.</p>
 
-    <figure>
+    <figure class="wide-diagram" tabindex="0">
     <svg viewBox="0 0 520 588" role="img" aria-labelledby="flow-title flow-desc">
       <title id="flow-title">The three steps of plan-then-cull</title>
       <desc id="flow-desc">Step one: a big model, qwen3 8b, writes a check function once.
@@ -619,7 +807,7 @@ export const PAGE = `<!doctype html>
     <p>"Survivors go again" is only half a design. A loop needs a way out, and it needs
     <b>three</b>, because there are three genuinely different ways a round can end.</p>
 
-    <figure>
+    <figure class="wide-diagram" tabindex="0">
     <svg viewBox="0 0 520 300" role="img" aria-labelledby="exits-title exits-desc">
       <title id="exits-title">The three ways the loop ends</title>
       <desc id="exits-desc">After grading, the loop takes one of three exits. If at least one
@@ -693,7 +881,7 @@ export const PAGE = `<!doctype html>
   </section>
 
   <!-- ============================= RESULT ============================= -->
-  <section>
+  <section data-visual="measurements-cards">
     <p class="step-label">Part one &mdash; what we measured</p>
     <h2>Four numbers, and what each one actually means</h2>
     <p class="src">Measured on the machine this runs on: Apple M4 Max, 128 GB unified memory,
@@ -776,7 +964,7 @@ export const PAGE = `<!doctype html>
   </section>
 
   <!-- ============================ PART TWO ============================ -->
-  <section>
+  <section data-visual="distillation-pipeline">
     <p class="step-label">Part two &mdash; train on the survivors</p>
     <h2>Culling finds good answers. Training makes them stick.</h2>
 
@@ -786,6 +974,43 @@ export const PAGE = `<!doctype html>
     the whole cost again.</p>
 
     <p>That is worth sitting with, because it is the technique's real weakness.</p>
+
+    <figure class="viz" id="distillation-visual" aria-labelledby="distillation-viz-title distillation-viz-desc">
+      <p class="viz-kicker">The whole pipeline</p>
+      <div class="viz-title" id="distillation-viz-title">Part one makes verified examples. Part two makes the gain permanent.</div>
+      <div class="pipeline-stages" aria-hidden="true">
+        <div class="stage-band">Part one &middot; this hack &middot; weights unchanged</div>
+        <div class="stage-band next">Part two &middot; not built &middot; weights change</div>
+      </div>
+      <div class="viz-flow flow-4">
+        <div class="viz-node" data-tone="info">
+          <span class="node-label">Pull</span>
+          <strong class="node-value">60 attempts</strong>
+          <span class="node-copy">Tiny model explores many answers.</span>
+        </div>
+        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
+        <div class="viz-node">
+          <span class="node-label">Cull</span>
+          <strong class="node-value">Run check()</strong>
+          <span class="node-copy">CPython deletes every failure.</span>
+        </div>
+        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
+        <div class="viz-node" data-tone="good">
+          <span class="node-label">Keep</span>
+          <strong class="node-value">Verified survivors</strong>
+          <span class="node-copy">Return now or collect across a corpus.</span>
+        </div>
+        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
+        <div class="viz-node" data-tone="accent">
+          <span class="node-label">Train once</span>
+          <strong class="node-value">Later training stage</strong>
+          <span class="node-copy">Distillation or self-training on checked data.</span>
+        </div>
+      </div>
+      <figcaption id="distillation-viz-desc">Stopping after the green box gives one better
+      answer but changes no weights. Repeating part one across many tasks creates the checked
+      dataset that a later distillation or self-training stage can use.</figcaption>
+    </figure>
 
     <table>
       <thead><tr><th></th><th>Part one: pull and cull</th><th>Part two: train</th></tr></thead>
@@ -832,11 +1057,46 @@ export const PAGE = `<!doctype html>
   </section>
 
   <!-- ============================== Q&A ============================== -->
-  <section>
+  <section data-visual="qa-trust">
     <p class="step-label">Questions worth asking</p>
     <h2>The objections, and honest answers</h2>
     <p class="src">These are the actual questions asked while building this. They are the ones a
     careful reader arrives at, so they are answered here rather than left for the Q&amp;A.</p>
+
+    <figure class="viz" id="trust-visual" aria-labelledby="trust-viz-title trust-viz-desc">
+      <p class="viz-kicker">Trust boundaries</p>
+      <div class="viz-title" id="trust-viz-title">Each component gets one job &mdash; and one explicit limit.</div>
+      <div class="trust-list">
+        <div class="trust-row">
+          <div class="trust-who">Big model</div>
+          <div class="trust-do"><b>Does</b>Write one auditable <code>check()</code>.</div>
+          <div class="trust-limit"><b>Does not</b>Supply the answer candidates.</div>
+        </div>
+        <div class="trust-row">
+          <div class="trust-who">Probe gate</div>
+          <div class="trust-do"><b>Does</b>Require known-good true and known-bad false.</div>
+          <div class="trust-limit"><b>Does not</b>Trust a checker that accepts everything.</div>
+        </div>
+        <div class="trust-row">
+          <div class="trust-who">Tiny model</div>
+          <div class="trust-do"><b>Does</b>Generate sixty different attempts.</div>
+          <div class="trust-limit"><b>Does not</b>Grade or certify its own output.</div>
+        </div>
+        <div class="trust-row">
+          <div class="trust-who">CPython</div>
+          <div class="trust-do"><b>Does</b>Apply the same executable rule every time.</div>
+          <div class="trust-limit"><b>Does not</b>Decide that the rule equals truth.</div>
+        </div>
+        <div class="trust-row">
+          <div class="trust-who">Current scope</div>
+          <div class="trust-do"><b>Does</b>Cover part one: pull and cull.</div>
+          <div class="trust-limit"><b>Does not</b>Train or change model weights yet.</div>
+        </div>
+      </div>
+      <figcaption id="trust-viz-desc">The promise is narrow on purpose: candidates can be
+      proven to satisfy an inspected rule. No component is allowed to turn that into a broader
+      claim about truth.</figcaption>
+    </figure>
 
     <h3>If small models are wrong a lot, how does the interpreter know an answer is right?</h3>
     <p>It does not. It knows whether the answer <b>satisfies the rule</b>. If the rule captures
@@ -877,13 +1137,49 @@ export const PAGE = `<!doctype html>
   </section>
 
   <!-- ========================== LEADERBOARD ========================== -->
-  <section>
+  <section data-visual="benchmark-flow">
     <p class="step-label">Run it yourself &mdash; live now</p>
     <h2>We measured one laptop. Help us measure the room.</h2>
 
     <p>Everything above rests on numbers from a single machine, which we just admitted moved
     by 2x between two runs. The fix is more machines. <b>If you have Ollama with any model
     pulled, two commands puts your laptop on the board.</b></p>
+
+    <figure class="viz" id="benchmark-visual" aria-labelledby="benchmark-viz-title benchmark-viz-desc">
+      <p class="viz-kicker">From your laptop to the room</p>
+      <div class="viz-title" id="benchmark-viz-title">Prompts and model stay local. Only the benchmark summary travels.</div>
+      <div class="viz-flow flow-4">
+        <div class="viz-node" data-tone="info">
+          <span class="node-label">1 &middot; Your laptop</span>
+          <strong class="node-value">Ollama model</strong>
+          <span class="node-copy">Use one you already pulled.</span>
+        </div>
+        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
+        <div class="viz-node">
+          <span class="node-label">2 &middot; Run locally</span>
+          <strong class="node-value">bench.py</strong>
+          <span class="node-copy">Measure throughput and parallel gain.</span>
+        </div>
+        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
+        <div class="viz-node">
+          <span class="node-label">3 &middot; Validate</span>
+          <strong class="node-value">Worker</strong>
+          <span class="node-copy">Type, range, and length checks.</span>
+        </div>
+        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
+        <div class="viz-node" data-tone="good">
+          <span class="node-label">4 &middot; Compare</span>
+          <strong class="node-value">Public board</strong>
+          <span class="node-copy">See which machines serialize.</span>
+        </div>
+      </div>
+      <div class="privacy-strip">
+        <div class="privacy-box"><b>Sends</b>Name, model tag, OS, CPU, and three measurements.</div>
+        <div class="privacy-box never"><b>Never sends</b>Prompts, generated output, or file paths.</div>
+      </div>
+      <figcaption id="benchmark-viz-desc">The benchmark runs against local Ollama. Its small
+      summary is validated before it can become a leaderboard row.</figcaption>
+    </figure>
 
     <pre style="background:var(--wash);border:1px solid var(--rule);border-radius:6px;padding:1rem;overflow-x:auto;font-family:'Geist Mono',ui-monospace,Menlo,monospace;font-size:.85rem"><code style="background:none;border:none;padding:0">curl -sO https://plan-then-cull.wilson-af8.workers.dev/bench.py
 python3 bench.py</code></pre>
@@ -908,17 +1204,98 @@ python3 bench.py</code></pre>
   </section>
 
   <!-- ============================== LIVE ============================== -->
-  <section>
+  <section data-visual="live-round">
     <p class="step-label">Live</p>
     <h2>Current round</h2>
     <p>When the system is running, each round posts here: how many attempts were generated,
     how many survived the interpreter, and what the surviving answer was.</p>
-    <div class="live" id="live">connecting...</div>
+
+    <figure class="viz" id="round-visual" aria-labelledby="round-viz-title round-viz-desc">
+      <p class="viz-kicker">Latest authenticated round</p>
+      <div class="viz-title" id="round-viz-title">Watch the population narrow to an exit.</div>
+      <div class="viz-flow flow-4">
+        <div class="viz-node" data-tone="info">
+          <span class="node-label">Pull</span>
+          <strong class="node-value" id="roundGenerated">&mdash;</strong>
+          <span class="node-copy">attempts generated</span>
+        </div>
+        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
+        <div class="viz-node">
+          <span class="node-label">Check</span>
+          <strong class="node-value" id="roundChecked">&mdash;</strong>
+          <span class="node-copy">run through CPython</span>
+        </div>
+        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
+        <div class="viz-node" data-tone="good">
+          <span class="node-label">Keep</span>
+          <strong class="node-value" id="roundSurvived">&mdash;</strong>
+          <span class="node-copy">survivors remain</span>
+        </div>
+        <span class="viz-arrow" aria-hidden="true">&rarr;</span>
+        <div class="viz-node" data-tone="accent">
+          <span class="node-label">Exit</span>
+          <strong class="node-value" id="roundExit">standby</strong>
+          <span class="node-copy">success, budget, or collapse</span>
+        </div>
+      </div>
+      <div class="viz-evidence">
+        <span class="viz-chip good">Locked write &middot; ingest token</span>
+        <span class="viz-chip info">Open read &middot; polls every 5 seconds</span>
+      </div>
+      <figcaption id="round-viz-desc">The four values update when a recognized round payload
+      arrives. The complete record remains visible below as a safe text-only fallback.</figcaption>
+    </figure>
+    <div class="live" id="live" role="status" aria-live="polite" aria-atomic="true">connecting...</div>
   </section>
 
   <!-- ============================ GLOSSARY ============================ -->
-  <section>
+  <section data-visual="glossary-map">
     <h2>Glossary</h2>
+
+    <figure class="viz" id="glossary-visual" aria-labelledby="glossary-viz-title glossary-viz-desc">
+      <p class="viz-kicker">The six ideas at a glance</p>
+      <div class="viz-title" id="glossary-viz-title">Knobs create attempts. CPython checks them. Culling keeps survivors.</div>
+      <div class="legend-grid">
+        <div class="legend-item">
+          <div class="legend-icon"><span class="mini-tile">A1</span></div>
+          <strong>Attempt</strong>
+          <p>One complete candidate answer.</p>
+        </div>
+        <div class="legend-item">
+          <div class="legend-icon">
+            <span class="mini-tile"></span><span class="mini-tile"></span><span class="mini-tile"></span><span class="mini-tile"></span>
+          </div>
+          <strong>Width</strong>
+          <p>How many attempts run at once.</p>
+        </div>
+        <div class="legend-item">
+          <div class="legend-icon">
+            <span class="mini-tile fail">&times;</span><span class="mini-tile fail">&times;</span><span class="mini-tile keep">&check;</span>
+          </div>
+          <strong>Cull</strong>
+          <p>Delete failures; keep what passes.</p>
+        </div>
+        <div class="legend-item">
+          <div class="legend-icon">
+            <span class="model-block small">0.6B</span><span aria-hidden="true">&harr;</span><span class="model-block large">8B</span>
+          </div>
+          <strong>Parameters</strong>
+          <p>Roughly, how large the model is.</p>
+        </div>
+        <div class="legend-item">
+          <div class="legend-icon"><span>A A A</span><span aria-hidden="true">&rarr;</span><span>A B C</span></div>
+          <strong>Temperature</strong>
+          <p>How much the attempts vary.</p>
+        </div>
+        <div class="legend-item">
+          <div class="legend-icon"><span class="viz-chip info">check()</span><span aria-hidden="true">&rarr;</span><span class="viz-chip good">True</span></div>
+          <strong>CPython</strong>
+          <p>The program that executes the rule.</p>
+        </div>
+      </div>
+      <figcaption id="glossary-viz-desc">Parameters and temperature shape the generator;
+      width controls the attempt pile; CPython and the cull determine what leaves it.</figcaption>
+    </figure>
     <dl class="glossary">
       <dt>Attempt (also: candidate)</dt>
       <dd>One complete answer written by the model. Sixty attempts means sixty separate
@@ -960,11 +1337,51 @@ python3 bench.py</code></pre>
   }
 
   var liveEl = document.getElementById('live');
+  var roundGeneratedEl = document.getElementById('roundGenerated');
+  var roundCheckedEl = document.getElementById('roundChecked');
+  var roundSurvivedEl = document.getElementById('roundSurvived');
+  var roundExitEl = document.getElementById('roundExit');
+
+  function pickRoundValue(record, names){
+    if (!record || typeof record !== 'object') return null;
+    for (var i = 0; i < names.length; i++) {
+      var value = record[names[i]];
+      if (value !== undefined && value !== null) return value;
+    }
+    return null;
+  }
+
+  function roundText(value, fallback){
+    if (typeof value === 'number' && isFinite(value)) return String(value);
+    if (typeof value === 'string' && value.length) return value.slice(0, 24);
+    return fallback;
+  }
+
+  function paintRoundVisual(record){
+    var generated = pickRoundValue(record, ['generated','attempts_generated','candidates_generated','attempts','candidate_count']);
+    var checked = pickRoundValue(record, ['checked','attempts_checked','candidates_checked']);
+    var survived = pickRoundValue(record, ['survived','survivors','survivor_count']);
+    var outcome = pickRoundValue(record, ['exit','status','outcome']);
+    roundGeneratedEl.textContent = roundText(generated, 'unknown');
+    roundCheckedEl.textContent = roundText(checked, roundText(generated, 'unknown'));
+    roundSurvivedEl.textContent = roundText(survived, 'unknown');
+    roundExitEl.textContent = roundText(outcome, 'reported');
+  }
+
+  function standbyRoundVisual(label){
+    roundGeneratedEl.textContent = '—';
+    roundCheckedEl.textContent = '—';
+    roundSurvivedEl.textContent = '—';
+    roundExitEl.textContent = label;
+  }
+
   function paintRound(d){
     if (!d || d.status === 'awaiting_rounds' || (d.round && d.round.status === 'standby')) {
+      standbyRoundVisual('standby');
       liveEl.textContent = 'No round running yet. This fills in once the local runner starts.';
       return;
     }
+    paintRoundVisual(d.round && typeof d.round === 'object' ? d.round : d);
     liveEl.textContent = JSON.stringify(d, null, 2);
   }
 
@@ -1026,7 +1443,7 @@ python3 bench.py</code></pre>
     fetch('/api/round', {cache:'no-store'})
       .then(function(r){ return r.json(); })
       .then(paintRound)
-      .catch(function(){ liveEl.textContent = 'offline'; });
+      .catch(function(){ standbyRoundVisual('offline'); liveEl.textContent = 'offline'; });
     fetch('/api/bench', {cache:'no-store'})
       .then(function(r){ return r.json(); })
       .then(paintBoard)
