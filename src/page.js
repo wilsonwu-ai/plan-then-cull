@@ -130,8 +130,10 @@ export const PAGE = `<!doctype html>
   A tiny model (<b>qwen3:0.6b</b>) writes <b>sixty different attempts</b> at passing it.
   Then <b>CPython</b> &mdash; the ordinary Python interpreter &mdash; runs every attempt and
   deletes the ones that fail.</p>
-  <p class="sub">Nothing here is a bigger model. The whole idea is to get a better answer out
-  of a small one by giving it many tries and a grader that cannot be argued with.</p>
+  <p class="sub">Nothing here is a bigger model. The idea is to get a better answer out of a
+  small one by giving it many tries and a grader that <em>runs</em> rather than opines. It does
+  not decide whether an answer is <em>true</em> &mdash; it decides whether the answer
+  <em>passes the rule</em>, the way an eval does.</p>
 
   <!-- ============================ SITUATION ============================ -->
   <section>
@@ -327,19 +329,181 @@ export const PAGE = `<!doctype html>
     that ships on any Mac or Linux box. The <code>check()</code> function actually runs.
     Attempts that return false are deleted. Survivors go around again.</p>
 
+    <h3>What is actually being checked &mdash; and what is not</h3>
+
+    <p>This is the part most worth being precise about, because it is easy to hear the wrong
+    thing.</p>
+
+    <div class="pull">The interpreter does not know whether an answer is <b>correct</b>.
+    It knows whether the answer <b>satisfies the rule</b>. Those are different claims.</div>
+
+    <p>If you have written evals before, this will be familiar: it is exactly
+    <em>"does this output pass the eval?"</em> &mdash; not <em>"is this output true?"</em>
+    An eval does not have opinions about truth. It has a pass condition, and it applies it.</p>
+
+    <p>That distinction sets a hard boundary on where this technique works at all. It needs
+    correctness to be <b>mechanically decidable</b> &mdash; something a program can settle by
+    running, with no judgment involved. Three families qualify:</p>
+
+    <table>
+      <thead><tr><th>Use case</th><th>What the rule checks</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Constraint satisfaction</b></td>
+          <td>A structural rule holds over the whole output</td>
+          <td>Every word starts with S. Exactly 12 syllables. No word repeats.</td>
+        </tr>
+        <tr>
+          <td><b>Code with tests</b></td>
+          <td>The code runs and the tests pass</td>
+          <td><code>solve(7)</code> must return <code>42</code>, and it does</td>
+        </tr>
+        <tr>
+          <td><b>Math with a checkable answer</b></td>
+          <td>The computed value equals the expected one</td>
+          <td>The program prints <code>0.5</code>, and <code>1/2</code> is accepted as equal</td>
+        </tr>
+        <tr>
+          <td><b>Format compliance</b></td>
+          <td>The output parses against a schema</td>
+          <td>Valid JSON, with the required fields, of the required types</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p><b>And what does not qualify:</b> "is this essay persuasive", "is this summary fair",
+    "is this the best design". No program settles those, so there is nothing for an interpreter
+    to enforce, and this method has nothing to offer. It is a technique for a specific class of
+    problem, not a general way to make small models smarter.</p>
+
+    <h3>The obvious objection: who checks the checker?</h3>
+
+    <p>A fair reader stops here and says: the rule was written by a model too. If
+    <code>qwen3:8b</code> writes a <em>wrong</em> <code>check()</code>, then CPython enforces
+    the wrong rule perfectly, on all sixty candidates, without complaint. Garbage in,
+    rigorously verified garbage out.</p>
+
+    <p><b>That objection is correct, and it is worth stating plainly rather than defending
+    against.</b> We did not remove the fallibility. We moved it somewhere you can inspect.</p>
+
+    <table>
+      <thead><tr><th></th><th>A model grades each answer</th><th>A model writes one rule, a machine enforces it</th></tr></thead>
+      <tbody>
+        <tr><td><b>Things that can be wrong</b></td><td class="n">60 separate judgments</td><td class="n">1 rule</td></tr>
+        <tr><td><b>Can a human read it?</b></td><td>No</td><td>Yes &mdash; it is a few lines of Python</td></tr>
+        <tr><td><b>Can you test it?</b></td><td>Not really</td><td>Yes, in seconds</td></tr>
+        <tr><td><b>Same answer twice?</b></td><td>Not guaranteed</td><td>Guaranteed</td></tr>
+        <tr class="focal"><td><b>Where the risk sits</b></td><td>Spread across 60 opaque calls</td><td>Concentrated in 1 auditable artifact</td></tr>
+      </tbody>
+    </table>
+
+    <p>One thing to get right instead of sixty, and you can actually look at it. That is the
+    honest claim. It is narrower than "the interpreter cannot be argued with", which is what an
+    earlier version of this page said &mdash; the interpreter cannot be argued with about
+    <em>whether the rule was satisfied</em>, but it has no view on whether the rule was any
+    good.</p>
+
     <div class="note">
-      <b>Why an interpreter instead of asking another model "is this right?"</b><br>
-      Because a model that grades another model shares its blind spots, and it can be talked
-      out of its answer by confident-sounding text. An interpreter has no opinion. It runs the
-      code. The code either produces the right answer or it does not. There is nothing to
-      persuade.
+      <b>So we test the test, before trusting it.</b> Before any candidate is graded, the
+      <code>check()</code> function has to survive two probes:
       <br><br>
-      This is also the one thing here that differs from the paper we are building on. In
-      <a href="https://arxiv.org/abs/2504.07081">DisCIPL</a>, the checking program is itself
-      written by a model and is approximate. The paper says so: bugs in generated programs can
-      <em>"yield incorrect outputs without triggering any errors."</em> We replaced that
-      checker with something that executes.
+      1. Give it a <b>known-good</b> answer. It must return true. A rule that rejects a correct
+      answer is broken.<br>
+      2. Give it a <b>known-bad</b> answer. It must return false. This one matters more, because
+      of the failure mode below.
+      <br><br>
+      <b>The vacuous checker is the danger.</b> A model asked to write a test, under pressure to
+      produce something that works, can write <code>def check(answer): return True</code>. That
+      passes every candidate. Every round succeeds. The run looks like a triumph and has
+      measured nothing at all &mdash; and unlike a crash, nothing about it looks wrong.
+      <br><br>
+      Hence the rule: <b>a checker that has never rejected anything is not a checker.</b>
+      If it cannot reject a deliberately wrong answer, we throw it away and generate another.
     </div>
+
+    <p class="src">This is also the one place we differ from the paper we build on. In
+    <a href="https://arxiv.org/abs/2504.07081">DisCIPL</a> the checking program is model-written
+    and approximate, and the paper is candid that bugs in generated programs can
+    <em>"yield incorrect outputs without triggering any errors."</em> We execute the rule rather
+    than approximate it, and we test the rule before we trust it. Neither of those makes it
+    infallible.</p>
+
+    <h3>When does the loop stop?</h3>
+
+    <p>"Survivors go again" is only half a design. A loop needs a way out, and it needs
+    <b>three</b>, because there are three genuinely different ways a round can end.</p>
+
+    <figure>
+    <svg viewBox="0 0 520 300" role="img" aria-labelledby="exits-title exits-desc">
+      <title id="exits-title">The three ways the loop ends</title>
+      <desc id="exits-desc">After grading, the loop takes one of three exits. If at least one
+      candidate passed, it returns that answer and stops. If the round budget or time limit is
+      reached, it stops and reports the best it found. If zero candidates survived, it stops
+      and reports honest failure rather than relaxing the rule until something passes.</desc>
+      <defs>
+        <marker id="ea" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+          <polygon points="0 0, 9 3.5, 0 7" fill="var(--soft)"/>
+        </marker>
+      </defs>
+
+      <line x1="260" y1="60" x2="260" y2="84" stroke="var(--soft)" stroke-width="1.5" marker-end="url(#ea)"/>
+      <path d="M 140 108 H 92 Q 84 108 84 116 V 140" fill="none" stroke="var(--soft)" stroke-width="1.5" marker-end="url(#ea)"/>
+      <line x1="260" y1="132" x2="260" y2="140" stroke="var(--soft)" stroke-width="1.5" marker-end="url(#ea)"/>
+      <path d="M 380 108 H 428 Q 436 108 436 116 V 140" fill="none" stroke="var(--soft)" stroke-width="1.5" marker-end="url(#ea)"/>
+
+      <rect x="140" y="20" width="240" height="40" rx="6" fill="var(--card)" stroke="var(--rule)"/>
+      <text x="260" y="45" fill="var(--ink)" font-size="14" font-weight="600"
+            font-family="'Geist',sans-serif" text-anchor="middle">A round finishes grading</text>
+
+      <rect x="140" y="84" width="240" height="48" rx="6" fill="var(--wash)" stroke="var(--rule)"/>
+      <text x="260" y="104" fill="var(--muted)" font-size="12" font-weight="600"
+            font-family="'Geist',sans-serif" text-anchor="middle">how many survived?</text>
+      <text x="260" y="122" fill="var(--soft)" font-size="10"
+            font-family="'Geist Mono',ui-monospace,Menlo,monospace" text-anchor="middle">one or more &#183; some, but out of budget &#183; none</text>
+
+      <rect x="20" y="140" width="128" height="72" rx="6" fill="var(--accent-tint)" stroke="var(--accent)"/>
+      <text x="84" y="162" fill="var(--accent)" font-size="9" font-weight="600"
+            font-family="'Geist Mono',ui-monospace,Menlo,monospace" text-anchor="middle" letter-spacing="1.2">EXIT 1 &#183; SUCCESS</text>
+      <text x="84" y="182" fill="var(--ink)" font-size="12" font-weight="600"
+            font-family="'Geist',sans-serif" text-anchor="middle">One passed</text>
+      <text x="84" y="200" fill="var(--muted)" font-size="10"
+            font-family="'Geist Mono',ui-monospace,Menlo,monospace" text-anchor="middle">return it, stop</text>
+
+      <rect x="196" y="140" width="128" height="72" rx="6" fill="var(--card)" stroke="var(--rule)"/>
+      <text x="260" y="162" fill="var(--muted)" font-size="9" font-weight="600"
+            font-family="'Geist Mono',ui-monospace,Menlo,monospace" text-anchor="middle" letter-spacing="1.2">EXIT 2 &#183; BUDGET</text>
+      <text x="260" y="182" fill="var(--ink)" font-size="12" font-weight="600"
+            font-family="'Geist',sans-serif" text-anchor="middle">Out of rounds</text>
+      <text x="260" y="200" fill="var(--muted)" font-size="10"
+            font-family="'Geist Mono',ui-monospace,Menlo,monospace" text-anchor="middle">report best so far</text>
+
+      <rect x="372" y="140" width="128" height="72" rx="6" fill="var(--card)" stroke="var(--rule)"/>
+      <text x="436" y="162" fill="var(--muted)" font-size="9" font-weight="600"
+            font-family="'Geist Mono',ui-monospace,Menlo,monospace" text-anchor="middle" letter-spacing="1.2">EXIT 3 &#183; COLLAPSE</text>
+      <text x="436" y="182" fill="var(--ink)" font-size="12" font-weight="600"
+            font-family="'Geist',sans-serif" text-anchor="middle">Zero survived</text>
+      <text x="436" y="200" fill="var(--muted)" font-size="10"
+            font-family="'Geist Mono',ui-monospace,Menlo,monospace" text-anchor="middle">say so, do not fudge</text>
+
+      <line x1="20" y1="244" x2="500" y2="244" stroke="var(--rule)" stroke-width="1"/>
+      <text x="20" y="264" fill="var(--soft)" font-size="10"
+            font-family="'Geist Mono',ui-monospace,Menlo,monospace">ONLY EXIT 1 IS A WIN. THE OTHER TWO ARE REPORTED, NOT HIDDEN.</text>
+    </svg>
+    <figcaption>Three exits. A loop with only the first one is a loop that never admits
+    failure.</figcaption>
+    </figure>
+
+    <p><b>Exit 3 is the one that matters most</b>, and it is the one most systems quietly get
+    wrong. If zero candidates survive, the population is dead &mdash; there is nothing left to
+    resample from. The tempting move is to relax the rule until something squeaks through, and
+    then report success.</p>
+
+    <div class="pull">We fail closed. If nothing passes, the answer is <b>"nothing passed in
+    N attempts"</b> &mdash; not a weakened rule and a green tick.</div>
+
+    <p>A system that always returns an answer is a system that will eventually hand you a wrong
+    one with total confidence. Reporting the empty result is the whole point of having a
+    grader.</p>
   </section>
 
   <!-- ============================= RESULT ============================= -->
@@ -483,6 +647,107 @@ export const PAGE = `<!doctype html>
     labs &mdash; the training recipes for shipped models like Claude or the current Codex are
     not public. Everything above is from published research papers, which is the only ground
     we can stand on honestly.</p>
+  </section>
+
+  <!-- ========================= WHERE IT FITS ========================= -->
+  <section>
+    <p class="step-label">Where this fits &mdash; the bigger picture</p>
+    <h2>This is the first half of how small models actually get better</h2>
+
+    <p>Everything so far happens at <b>question time</b>. You ask, we generate sixty attempts,
+    we filter, you get an answer. The model itself is completely unchanged &mdash; it is exactly
+    as capable after all that as it was before. Ask the same question tomorrow and you pay the
+    whole cost again.</p>
+
+    <p>That is worth sitting with, because it is the technique's real weakness.</p>
+
+    <table>
+      <thead><tr><th></th><th>Search (what this page describes)</th><th>Distillation</th></tr></thead>
+      <tbody>
+        <tr><td><b>When it happens</b></td><td>Every time you ask a question</td><td>Once, during training</td></tr>
+        <tr><td><b>Does the model change?</b></td><td>No. Weights untouched.</td><td>Yes. Permanently.</td></tr>
+        <tr><td><b>What it costs</b></td><td>60x the compute, forever</td><td>One training run, then free</td></tr>
+        <tr><td><b>What you get</b></td><td>A better answer, this once</td><td>A better model</td></tr>
+      </tbody>
+    </table>
+
+    <h3>What distillation is</h3>
+
+    <p>Distillation is how a small model inherits ability from a large one. A big
+    <b>teacher</b> model produces outputs; a small <b>student</b> model trains on them. The
+    student never sees the teacher's internals &mdash; it just learns to produce the same kinds
+    of answers. Done well, a small model ends up far better than its size would suggest,
+    because it learned from a curated diet rather than the raw internet.</p>
+
+    <p>This is not a niche trick. It is a substantial part of why capable small models exist at
+    all, and it is what makes a model that fits on a laptop worth having.</p>
+
+    <h3>And here is the join</h3>
+
+    <p>Distillation has an obvious weakness of its own: <b>the teacher is sometimes wrong.</b>
+    Train a student on unfiltered teacher output and you faithfully teach it the teacher's
+    mistakes. Worse, supervised training is intolerant in a way pretraining is not &mdash; a
+    wrong example is not diluted among billions of tokens, it is <em>taught</em>.</p>
+
+    <p>So you want to filter the teacher's output before training on it. And filtering
+    generated candidates by executing them is&hellip; exactly what this page has been about.</p>
+
+    <div class="pull">Run the search. Keep what survived the interpreter.
+    <b>Then train on the survivors.</b></div>
+
+    <p>Which means <b>plan-then-cull is the front half of a distillation pipeline</b>. The same
+    loop that gets you a good answer today can, pointed at a corpus instead of a question,
+    manufacture verified training data &mdash; every example of which is one whose code
+    actually ran and actually produced the stated answer.</p>
+
+    <p>That reframing is the honest scope of this project. It is not a way to make a small model
+    permanently smarter. It is a way to get a reliable answer out of an unreliable model now,
+    and a way to generate the verified examples that would make it permanently smarter later.</p>
+  </section>
+
+  <!-- ============================== Q&A ============================== -->
+  <section>
+    <p class="step-label">Questions worth asking</p>
+    <h2>The objections, and honest answers</h2>
+    <p class="src">These are the actual questions asked while building this. They are the ones a
+    careful reader arrives at, so they are answered here rather than left for the Q&amp;A.</p>
+
+    <h3>If small models are wrong a lot, how does the interpreter know an answer is right?</h3>
+    <p>It does not. It knows whether the answer <b>satisfies the rule</b>. If the rule captures
+    what "correct" means for your task, that is the same thing. If it does not, the interpreter
+    will happily certify a wrong answer. Everything here depends on picking tasks where a rule
+    can capture correctness &mdash; code with tests, math with a checkable value, structural
+    constraints, schema compliance.</p>
+
+    <h3>Does the big model write the answer that the small model tries to match?</h3>
+    <p>No, and this is worth being clear about. <b>The big model never produces an answer.</b>
+    It writes a test and stops. The sixty attempts are never compared against a big-model
+    answer &mdash; they are compared against a rule. The expensive model contributes the
+    standard, not the content.</p>
+
+    <h3>Who says the big model's test is correct?</h3>
+    <p>Nobody, and this is the sharpest objection to the whole design. A model-written rule can
+    be wrong, and the interpreter will then enforce something wrong with total consistency. What
+    we get is not infallibility, it is <b>auditability</b>: one rule you can read and test,
+    instead of sixty judgments you cannot. Plus the two probes above &mdash; the rule must accept
+    a known-good answer and reject a known-bad one before we trust it.</p>
+
+    <h3>If the test is faulty, is the small model being trained on a broken system?</h3>
+    <p>Nothing is being trained here &mdash; no weights change, so there is no lasting damage; a
+    bad rule spoils one query. <b>But the concern becomes real the moment you use this to
+    generate training data</b>, which is exactly the distillation step above. At that point a
+    faulty checker stops spoiling one answer and starts teaching a permanent mistake. That is
+    why the checker validation is not optional the moment you cross from answering into
+    training.</p>
+
+    <h3>The survivors loop around &mdash; when does it stop?</h3>
+    <p>Three exits: a candidate passes, the budget runs out, or nothing survives. The third is
+    reported as failure rather than papered over by loosening the rule.</p>
+
+    <h3>Is this the same thing as the models trained on other models' answers?</h3>
+    <p>No &mdash; those are trained, this is not. See the section above: training changes the
+    model permanently, searching changes only today's answer. They are complementary, and the
+    output of this feeds the input of that.</p>
   </section>
 
   <!-- ========================== LEADERBOARD ========================== -->
