@@ -60,6 +60,16 @@ def main():
     check("page returns 200", status == 200, str(status))
     check("page is html", "text/html" in ctype, ctype)
     check("page is non-trivial", len(html) > 2000, f"{len(html)} bytes")
+    check("hero is Distillation", "<h1>Distillation</h1>" in html)
+    check("hero defines pull and cull", "Part one: pull and cull." in html)
+
+    openai_at = html.find("Start here &mdash; OpenAI Codex")
+    problem_at = html.find("Why this matters &mdash; the problem")
+    check(
+        "OpenAI example comes first",
+        openai_at >= 0 and problem_at >= 0 and openai_at < problem_at,
+        f"OpenAI at {openai_at}, problem at {problem_at}",
+    )
 
     # The trap: a backslash surviving into the served page means the template
     # literal mangled something. There should be exactly zero.

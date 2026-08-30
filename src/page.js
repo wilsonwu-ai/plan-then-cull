@@ -1,8 +1,9 @@
 /**
  * The public page, told as a story.
  *
- * Structure is STAR: Situation, then Task & Action together, then Result,
- * then a real-world case (not an analogy).
+ * Structure opens with the familiar OpenAI result, then tells the project as
+ * STAR: Situation, Task & Action, Result, and where the work fits in a full
+ * distillation pipeline.
  *
  * Register: explain it to someone who knows nothing. Every technical term is
  * defined the first time it appears. Every number carries a "what this means"
@@ -20,7 +21,7 @@ export const PAGE = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>plan-then-cull</title>
+<title>Distillation &mdash; pull and cull</title>
 <style>
   :root{
     --paper:#f5f5f5; --ink:#2d3142; --muted:#4f5d75; --soft:#7a8399;
@@ -124,20 +125,79 @@ export const PAGE = `<!doctype html>
 <body>
 <div class="wrap">
 
-  <p class="eyebrow">Sundai Hack 138 &middot; MIT &middot; 30 August 2026</p>
-  <h1>plan-then-cull</h1>
-  <p class="lede">A big model (<b>qwen3:8b</b>) writes a test, once.
-  A tiny model (<b>qwen3:0.6b</b>) writes <b>sixty different attempts</b> at passing it.
-  Then <b>CPython</b> &mdash; the ordinary Python interpreter &mdash; runs every attempt and
-  deletes the ones that fail.</p>
-  <p class="sub">Nothing here is a bigger model. The idea is to get a better answer out of a
-  small one by giving it many tries and a grader that <em>runs</em> rather than opines. It does
-  not decide whether an answer is <em>true</em> &mdash; it decides whether the answer
-  <em>passes the rule</em>, the way an eval does.</p>
+  <p class="eyebrow">plan-then-cull &middot; Sundai Hack 138 &middot; MIT &middot; 30 August 2026</p>
+  <h1>Distillation</h1>
+  <p class="lede"><b>Part one: pull and cull.</b> Pull sixty attempts from a tiny model. Cull
+  the ones that fail a Python test written once by a bigger model.</p>
+  <p class="sub"><b>Part two: train on the survivors.</b> This hack builds part one. Nothing is
+  trained yet; the survivors can later become mechanically checked training examples.</p>
+
+  <!-- =========================== OPENAI PROOF =========================== -->
+  <section>
+    <p class="step-label">Start here &mdash; OpenAI Codex</p>
+    <h2>With 100 tries, Codex solved 77.5% of problems. With one try, 37.7%.</h2>
+
+    <p>When OpenAI built <b>Codex</b> &mdash; the model behind the first GitHub Copilot &mdash;
+    it measured the exact gap this project tackles: a passing answer can already be in the pile
+    even when the model cannot pick it.</p>
+
+    <p>They gave Codex 164 programming problems and let it write <b>100 attempts</b> at each.
+    Then they asked three different questions about the same pile of attempts.</p>
+
+    <table>
+      <thead><tr><th>How you pick an answer</th><th class="n">Problems solved</th></tr></thead>
+      <tbody>
+        <tr><td>Take one attempt and go with it</td><td class="n">37.7%</td></tr>
+        <tr><td>Let the model pick its own favourite of the 100</td><td class="n">44.5%</td></tr>
+        <tr class="focal"><td>Run the code and keep whichever attempt works</td><td class="n">77.5%</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pull">The correct answer was already sitting in the pile <b>77.5%</b> of the
+    time. The model could only find it <b>44.5%</b> of the time.</div>
+
+    <p>The middle row is the important one. It is the model grading itself &mdash; picking the
+    attempt it felt most confident about. Of the 39.8 points available between "one attempt"
+    and "run the code," the model's own judgment recovered <b>6.8</b>. Executing the code
+    recovered <b>all of them</b>.</p>
+
+    <p>That is why part one needs a grader that runs, not another model with another opinion.
+    OpenAI measured the difference and it was 33 percentage points.</p>
+
+    <div class="note">
+      <b>The honest catch, before anyone raises it.</b> That 77.5% was obtained by picking
+      with the <em>same tests used to score the answer</em>. The paper calls this an oracle
+      and treats it as a ceiling, not a result &mdash; and it is right to.
+      <br><br>
+      So here is the version without the oracle, from the same paper. On a harder benchmark
+      called APPS, they generated 1,000 attempts and filtered them using <b>only the two or
+      three example tests printed in the problem statement</b>, while the real grading tests
+      stayed hidden. Score went from <b>4.14%</b> to <b>22.78%</b> &mdash; about 5.5x &mdash;
+      with no oracle anywhere. That is the honest shape of what this project does, and it is
+      the number to hold us to.
+      <br><br>
+      One more caveat that belongs to us, not to them: those 1,000 attempts are not free.
+      Comparing "sample 1,000 and filter" against "sample once" is not a like-for-like
+      comparison of compute, and we should not pretend otherwise.
+    </div>
+
+    <p class="src">Source: Chen et al. 2021,
+    <a href="https://arxiv.org/abs/2107.03374">Evaluating Large Language Models Trained on
+    Code</a>, arXiv:2107.03374 &mdash; Figure 1 for the three-way comparison, Table 2 for APPS.
+    Codex-S-12B, temperature 0.8.</p>
+
+    <p><b>A note on what we are not claiming.</b> The training recipes for today's shipped
+    frontier models are not public. Everything above is from published research, which is the
+    only ground we can stand on honestly.</p>
+
+    <p>That is pull and cull: pull many attempts, run a real check, and cull what fails. This
+    project asks whether the same pattern can make a tiny local model useful &mdash; and whether
+    the survivors can become training examples.</p>
+  </section>
 
   <!-- ============================ SITUATION ============================ -->
   <section>
-    <p class="step-label">Situation &mdash; the problem</p>
+    <p class="step-label">Why this matters &mdash; the problem</p>
     <h2>Small models are cheap, fast, and wrong a lot</h2>
 
     <p>A <dfn title="A language model with few parameters, so it is cheap and fast but less capable">small language model</dfn>
@@ -162,7 +222,7 @@ export const PAGE = `<!doctype html>
 
   <!-- ========================= TASK &amp; ACTION ========================= -->
   <section>
-    <p class="step-label">Task &amp; Action &mdash; what we set out to do, and what we did</p>
+    <p class="step-label">Part one &mdash; pull and cull</p>
     <h2>Stop asking the model to be right. Ask it many times, and check.</h2>
 
     <p>If one attempt from a small model is unreliable, sixty attempts are sixty chances that
@@ -508,7 +568,7 @@ export const PAGE = `<!doctype html>
 
   <!-- ============================= RESULT ============================= -->
   <section>
-    <p class="step-label">Result &mdash; what we measured</p>
+    <p class="step-label">Part one &mdash; what we measured</p>
     <h2>Four numbers, and what each one actually means</h2>
     <p class="src">Measured on the machine this runs on: Apple M4 Max, 128 GB unified memory,
     Ollama 0.31.1. Scripts and raw output are
@@ -589,80 +649,20 @@ export const PAGE = `<!doctype html>
     </div>
   </section>
 
-  <!-- =========================== REAL CASE =========================== -->
+  <!-- ============================ PART TWO ============================ -->
   <section>
-    <p class="step-label">Where this has worked before &mdash; real systems, not an analogy</p>
-    <h2>OpenAI measured this in 2021, and the gap was 39.8 points</h2>
+    <p class="step-label">Part two &mdash; train on the survivors</p>
+    <h2>Culling finds good answers. Training makes them stick.</h2>
 
-    <p>When OpenAI built <b>Codex</b> &mdash; the model behind the first GitHub Copilot &mdash;
-    they published a number that is really the whole argument for this project.</p>
-
-    <p>They gave the model 164 programming problems and let it write <b>100 attempts</b> at
-    each. Then they asked three different questions about the same pile of attempts.</p>
-
-    <table>
-      <thead><tr><th>How you pick an answer</th><th class="n">Problems solved</th></tr></thead>
-      <tbody>
-        <tr><td>Take one attempt and go with it</td><td class="n">37.7%</td></tr>
-        <tr><td>Let the model pick its own favourite of the 100</td><td class="n">44.5%</td></tr>
-        <tr class="focal"><td>Run the code and keep whichever attempt works</td><td class="n">77.5%</td></tr>
-      </tbody>
-    </table>
-
-    <div class="pull">The correct answer was already sitting in the pile <b>77.5%</b> of the
-    time. The model could only find it <b>44.5%</b> of the time.</div>
-
-    <p>Read those three rows again, because the middle one is the important one. It is the
-    model grading itself &mdash; picking whichever of its own attempts it felt most confident
-    about. Of the 39.8 points available between "one attempt" and "run the code," the model's
-    own judgment recovered <b>6.8</b>. Executing the code recovered <b>all of them</b>.</p>
-
-    <p>That is why the grader here is an interpreter and not a second model. It is not a
-    philosophical preference. OpenAI measured the difference and it was 33 percentage points.</p>
-
-    <div class="note">
-      <b>The honest catch, before anyone raises it.</b> That 77.5% was obtained by picking
-      with the <em>same tests used to score the answer</em>. The paper calls this an oracle
-      and treats it as a ceiling, not a result &mdash; and it is right to.
-      <br><br>
-      So here is the version without the oracle, from the same paper. On a harder benchmark
-      called APPS, they generated 1,000 attempts and filtered them using <b>only the two or
-      three example tests printed in the problem statement</b>, while the real grading tests
-      stayed hidden. Score went from <b>4.14%</b> to <b>22.78%</b> &mdash; about 5.5x &mdash;
-      with no oracle anywhere. That is the honest shape of what this project does, and it is
-      the number to hold us to.
-      <br><br>
-      One more caveat that belongs to us, not to them: those 1,000 attempts are not free.
-      Comparing "sample 1,000 and filter" against "sample once" is not a like-for-like
-      comparison of compute, and we should not pretend otherwise.
-    </div>
-
-    <p class="src">Source: Chen et al. 2021,
-    <a href="https://arxiv.org/abs/2107.03374">Evaluating Large Language Models Trained on
-    Code</a>, arXiv:2107.03374 &mdash; Figure 1 for the three-way comparison, Table 2 for APPS.
-    Codex-S-12B, temperature 0.8.</p>
-
-    <p><b>A note on what we are not claiming.</b> You may reasonably wonder how today's
-    frontier models are actually built. We do not know, and neither does anyone outside those
-    labs &mdash; the training recipes for shipped models like Claude or the current Codex are
-    not public. Everything above is from published research papers, which is the only ground
-    we can stand on honestly.</p>
-  </section>
-
-  <!-- ========================= WHERE IT FITS ========================= -->
-  <section>
-    <p class="step-label">Where this fits &mdash; the bigger picture</p>
-    <h2>This is the first half of how small models actually get better</h2>
-
-    <p>Everything so far happens at <b>question time</b>. You ask, we generate sixty attempts,
-    we filter, you get an answer. The model itself is completely unchanged &mdash; it is exactly
-    as capable after all that as it was before. Ask the same question tomorrow and you pay the
-    whole cost again.</p>
+    <p>Part one happens at <b>question time</b>. You ask, we pull sixty attempts, cull the
+    failures, and return what survived. The model itself is completely unchanged &mdash; it is
+    exactly as capable afterward as it was before. Ask the same question tomorrow and you pay
+    the whole cost again.</p>
 
     <p>That is worth sitting with, because it is the technique's real weakness.</p>
 
     <table>
-      <thead><tr><th></th><th>Search (what this page describes)</th><th>Distillation</th></tr></thead>
+      <thead><tr><th></th><th>Part one: pull and cull</th><th>Part two: train</th></tr></thead>
       <tbody>
         <tr><td><b>When it happens</b></td><td>Every time you ask a question</td><td>Once, during training</td></tr>
         <tr><td><b>Does the model change?</b></td><td>No. Weights untouched.</td><td>Yes. Permanently.</td></tr>
@@ -671,7 +671,7 @@ export const PAGE = `<!doctype html>
       </tbody>
     </table>
 
-    <h3>What distillation is</h3>
+    <h3>How part two works</h3>
 
     <p>Distillation is how a small model inherits ability from a large one. A big
     <b>teacher</b> model produces outputs; a small <b>student</b> model trains on them. The
@@ -692,7 +692,7 @@ export const PAGE = `<!doctype html>
     <p>So you want to filter the teacher's output before training on it. And filtering
     generated candidates by executing them is&hellip; exactly what this page has been about.</p>
 
-    <div class="pull">Run the search. Keep what survived the interpreter.
+    <div class="pull">Pull the candidates. Cull the failures.
     <b>Then train on the survivors.</b></div>
 
     <p>Which means <b>plan-then-cull is the front half of a distillation pipeline</b>. The same
@@ -700,9 +700,9 @@ export const PAGE = `<!doctype html>
     manufacture verified training data &mdash; every example of which is one whose code
     actually ran and actually produced the stated answer.</p>
 
-    <p>That reframing is the honest scope of this project. It is not a way to make a small model
-    permanently smarter. It is a way to get a reliable answer out of an unreliable model now,
-    and a way to generate the verified examples that would make it permanently smarter later.</p>
+    <p>That is why <b>Distillation</b> sits at the top of this page even though this hack builds
+    only part one. Pull and cull gets a reliable answer out of an unreliable model now, and
+    creates the verified examples that can make it permanently smarter later.</p>
   </section>
 
   <!-- ============================== Q&A ============================== -->
