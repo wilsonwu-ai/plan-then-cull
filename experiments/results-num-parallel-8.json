@@ -1,0 +1,22 @@
+{
+  "ollama_version": "0.31.1",
+  "model": "qwen3:1.7b",
+  "concurrency": {
+    "n": 8,
+    "sequential_wall_s": 4.75,
+    "concurrent_wall_s": 3.59,
+    "speedup": 1.32,
+    "sequential_per_req_s": 0.59,
+    "concurrent_per_req_s": 3.55,
+    "verdict": "SERIALIZED"
+  },
+  "n_parameter": {
+    "requested": 4,
+    "returned": 1,
+    "verdict": "IGNORED"
+  },
+  "logprobs": {
+    "verdict": "AVAILABLE"
+  },
+  "implication": "Server serialises concurrent requests. A particle population costs N x single-request latency in wall-clock. Budget width accordingly, and cull between visible rounds rather than running true parallel SMC."
+}

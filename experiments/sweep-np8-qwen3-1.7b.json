@@ -1,0 +1,40 @@
+{
+  "ollama_version": "0.31.1",
+  "model": "qwen3:1.7b",
+  "rows": [
+    {
+      "width": 1,
+      "sequential_wall_s": 2.2,
+      "concurrent_wall_s": 2.31,
+      "speedup": 0.95,
+      "sequential_tok_per_s": 72.8,
+      "concurrent_tok_per_s": 69.3
+    },
+    {
+      "width": 4,
+      "sequential_wall_s": 7.79,
+      "concurrent_wall_s": 4.73,
+      "speedup": 1.65,
+      "sequential_tok_per_s": 82.1,
+      "concurrent_tok_per_s": 135.3
+    },
+    {
+      "width": 8,
+      "sequential_wall_s": 15.36,
+      "concurrent_wall_s": 9.3,
+      "speedup": 1.65,
+      "sequential_tok_per_s": 83.4,
+      "concurrent_tok_per_s": 137.7
+    },
+    {
+      "width": 16,
+      "sequential_wall_s": 29.43,
+      "concurrent_wall_s": 16.71,
+      "speedup": 1.76,
+      "sequential_tok_per_s": 87.0,
+      "concurrent_tok_per_s": 153.2
+    }
+  ],
+  "ceiling_speedup": 1.76,
+  "ceiling_width": 16
+}
