@@ -3,12 +3,12 @@
   "model": "qwen3:1.7b",
   "concurrency": {
     "n": 8,
-    "sequential_wall_s": 5.0,
-    "concurrent_wall_s": 5.1,
-    "speedup": 0.98,
-    "sequential_per_req_s": 0.62,
-    "concurrent_per_req_s": 2.87,
-    "verdict": "SERIALIZED"
+    "sequential_wall_s": 2.47,
+    "concurrent_wall_s": 1.18,
+    "speedup": 2.1,
+    "sequential_per_req_s": 0.31,
+    "concurrent_per_req_s": 1.17,
+    "verdict": "PARALLEL"
   },
   "n_parameter": {
     "requested": 4,
@@ -18,5 +18,5 @@
   "logprobs": {
     "verdict": "AVAILABLE"
   },
-  "implication": "Server serialises concurrent requests. A particle population costs N x single-request latency in wall-clock. Budget width accordingly, and cull between visible rounds rather than running true parallel SMC."
+  "implication": "Server parallelises. A particle population is affordable at width N."
 }
